@@ -1,0 +1,2 @@
+El sistema deberá incluir, además un modo normal y un modo de configuración (set up). Cuando entre al modo normal, tendrá que ir a sleep (modo de bajo consumo) y se tiene que despertar cada tanto, por ejemplo, para medir la luz o ver el tiempo que paso.
+En el modo set up se deberán setear las variables para que funcione el modo normal y estas deberán ser grabadas en una memoria EEPROM.
