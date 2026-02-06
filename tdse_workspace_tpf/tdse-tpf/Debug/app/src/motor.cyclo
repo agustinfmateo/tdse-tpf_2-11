@@ -1,0 +1,5 @@
+../app/src/motor.c:29:6:motorMove	1
+../app/src/motor.c:39:6:motorStop	1
+../app/src/motor.c:50:6:setPWM	1
+../app/src/motor.c:87:6:motorMoveL298N	2
+../app/src/motor.c:102:6:motorStopL298N	1
