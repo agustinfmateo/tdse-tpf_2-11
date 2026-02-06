@@ -55,7 +55,7 @@
 #define G_TASK_ACT_TICK_CNT_INI		0ul
 
 //Esto ahora es un define pero despues va la variable
-#define CURTAIN_MOVE_TIME_MS  5000
+#define CURTAIN_MOVE_TIME_MS  15000
 #define SPEED_PWM  8
 #define SPIN true
 
@@ -86,7 +86,6 @@ volatile uint32_t g_task_actuator_tick_cnt;
 void task_actuator_init(void *parameters)
 {
 	uint32_t index;
-	const task_actuator_cfg_t *p_task_actuator_cfg;
 	task_actuator_dta_t *p_task_actuator_dta;
 	task_actuator_st_t state;
 	task_actuator_ev_t event;
@@ -104,7 +103,6 @@ void task_actuator_init(void *parameters)
 	for (index = 0; ACTUATOR_DTA_QTY > index; index++)
 	{
 		/* Update Task Actuator Configuration & Data Pointer */
-		p_task_actuator_cfg = &task_actuator_cfg_list[index];
 		p_task_actuator_dta = &task_actuator_dta_list[index];
 
 		/* Print out: Index & Task execution FSM */
@@ -178,7 +176,7 @@ void task_actuator_update(void *parameters)
 
 				case ST_BINDS_XX_CLOSE:
 
-					if ((p_task_actuator_dta->flag == true) && (p_task_actuator_dta->event == EV_BINDS_XX_CLOSE))
+					if ((p_task_actuator_dta->flag == true) && (p_task_actuator_dta->event == EV_BINDS_XX_OPEN))
 					{
 						p_task_actuator_dta->flag = false;
 						p_task_actuator_dta->state = ST_BINDS_XX_OPENING;

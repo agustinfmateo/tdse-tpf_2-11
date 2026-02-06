@@ -90,7 +90,6 @@ typedef struct
 /********************** external data declaration ****************************/
 extern task_actuator_dta_t task_actuator_dta_list[];
 
-
 /********************** external functions declaration ***********************/
 
 /********************** End of CPP guard *************************************/

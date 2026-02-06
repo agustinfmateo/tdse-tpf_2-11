@@ -44,7 +44,19 @@
 #include "dwt.h"
 
 /* Application & Tasks includes. */
+#include "app.h"
 #include "task_actuator.h"
+//BORRAR ESTO
+//
+//
+//
+//
+//
+//#include "task_actuator_interface.h"
+//#include "task_actuator_attribute.h"
+//#include "motor.h"
+//extern void put_event_task_actuator(task_actuator_ev_t event, task_actuator_id_t identifier);
+
 
 /********************** macros and definitions *******************************/
 #define G_APP_CNT_INI		0ul
@@ -113,6 +125,13 @@ void app_init(void)
 		task_dta_list[index].WCET = TASK_X_WCET_INI;
 	}
 
+	///BORRAR ESRTO
+	//
+	//
+	//
+	//
+	//put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+
 	cycle_counter_init();
 }
 
@@ -136,6 +155,7 @@ void app_update(void)
 			cycle_counter_reset();
 
     		/* Run task_x_update */
+
 			(*task_cfg_list[index].task_update)(task_cfg_list[index].parameters);
 
 			cycle_counter_time_us = cycle_counter_time_us();
