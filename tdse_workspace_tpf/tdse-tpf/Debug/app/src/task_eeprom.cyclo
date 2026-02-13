@@ -1,0 +1,12 @@
+../app/src/task_eeprom.c:87:6:task_eeprom_init	2
+../app/src/task_eeprom.c:124:6:task_eeprom_update	23
+../app/src/task_eeprom.c:273:6:eeprom_check_and_load	3
+../app/src/task_eeprom.c:288:6:HAL_I2C_MemTxCpltCallback	2
+../app/src/task_eeprom.c:292:6:HAL_I2C_MemRxCpltCallback	2
+../app/src/task_eeprom.c:298:17:calc_cyclic_addr	1
+../app/src/task_eeprom.c:302:13:write_chunk	3
+../app/src/task_eeprom.c:323:15:write_eeprom	2
+../app/src/task_eeprom.c:334:15:read_eeprom	2
+../app/src/task_eeprom.c:345:15:read_eeprom_blocking	2
+../app/src/task_eeprom.c:355:17:read_id	1
+../app/src/task_eeprom.c:362:13:find_latest_slot	9
