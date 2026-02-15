@@ -1,0 +1,68 @@
+  task_menu.c (task_menu.h, task_menu_attribute.h) 
+   Non-Blocking Code -> System Modeling
+
+	<<<task_menu_attribute.h>>>
+
+Se definen los distintos eventos del módulo menu en un enumerativo declarado como task_menu_ev y 
+define el tipo task_menu_ev_t. Se definen los distintos estados del menu en un enumerativo declarado 
+como task_menu_st y define el tipo task_menu_st_t. Define la estructura task_menu_dta_t, en la cual se 
+integran un tick, el estado del menu, el evento del mismo y un flag en forma de booleano. Declara la 
+variable externa task_menu_dta del tipo task_menu_dta_t.
+
+	<<<task_menu.c>>>
+
+Se definen los valores mínimos, medios y máximos del delay del sistema, y los valores iniciales de los 
+contadores. Define la variable interna task_menu_dta del tipo task_menu_dta_t, estableciendo el tick, 
+el estado y el evento inicial, así como el valor inicial del flag en false. Seguido define la cantidad 
+de menus, en este caso 1, y declara el contador de vueltas g_task_menu_cnt y el de tics 
+g_task_menu_tick_cnt.
+
+Define la función void task_menu_init(void *parameters) que imprime que la función está andando y una 
+descripción de la misma e inicializa el contador g_task_menu_cnt al principio. Luego llama a la función 
+init_queue_event_task_menu() e imprime el estado, evento y flag inicial de task_menu_dta. Inicializa y 
+resetea el contador de ciclos, inicializa el display e imprime en su pantalla "TdSE Bienvenidos" y 
+"Test Nro: ", para luego al final inicializar el contador g_task_menu_tick_cnt.
+
+Define la función void task_menu_update(void *parameters) que declara internamente un puntero a 
+task_menu_dta_t, define un booleano b_time_update_required como false, declara un string menu_str[8] y 
+aumenta en 1 el valor del contador g_task_menu_cnt. Luego deshabilita las interrupciones y se fija, en un 
+if, si el valor de g_task_menu_tick_cnt es mayor a su valor de inicialización, en tal caso de que sea 
+cierto esto último disminuye en 1 dicho contador y establece en true a b_time_update_required, para luego 
+salir de if y habilitar las interrupciones. Luego se entra en un while, en tanto b_time_update_required 
+sea true, que en primer lugar deshabilita las interrupciones y pone un if igual al último mencionado 
+seguido de un else que establece al booleano b_time_update_required como false después del cual se vuelven 
+a habilitar las interrupciones. Aun en el while se observa a través de un if si el tick de task_menu_dta 
+es mayor a DEL_MEN_XX_MIN, de serlo disminuye dicho tick. De no darse la condición del if, se entra en un 
+else en el cual se imprime en la pantalla del diplay en número g_task_menu_cnt/1000ul, para luego 
+establecer el tick de task_menu_dta como DEL_MEN_XX_MAX. Siguien dentro del else, se mira a través de la 
+función any_event_task_menu() si sucedió un evento, de haber sucedido alguno pone el flag de 
+task_system_dta en true y se llama a la función get_event_task_menu() para conseguir dicho evento, seguido 
+se entra en switch en el cual se establecen los cambios de estado y acciones a tomar en función de los 
+eventos.
+
+
+  task_menu_interface.c (task_menu_interface.h)
+   Non-Blocking Code
+
+	<<<task_menu_interface.c>>>
+
+Se definen las macros EVENT_UNDEFINED y MAX_EVENTS como (255) y (16) respectivamente. Seguido se define la 
+estructura interna queue_task_a, la cual contiene tres variables del tipo uint32_t, head, tail y count, y 
+un array de largo MAX_EVENTS del tipo task_menu_ev_t declarado como queue.
+
+Después se define la función init_queue_event_menu, que recibe void y devuelve void, la cual establece el 
+valor de head, tail y count en 0, y define cada elemento del array queue como EVENT_UNDEFINED. 
+
+Define la función void put_event_task_menu(task_menu_ev_t event) la cual aumenta en 1 el valor de count, 
+establece al elemento en la posición head de queue como event y seguido aumenta en 1 el valor de head. 
+Por último si el valor de head alcanza a MAX_EVENTS se restablece su valor a 0.
+
+Define la función task_menu_ev_t get_event_task_menu(void) la cual primero declara internamente la 
+variable task_menu_ev_t event, después decrementa el valor de count en 1, define a event como el elemento 
+en la posición tail de queue y seguido define al mismo elemento de queue como EVENT_UNDEFINED. Al final 
+si el valor de tail llega hasta MAX_EVENTS lo restablece a 0 y la función devuelve a event.
+
+Define, al final, la función bool any_event_task_menu(void) que devuelve TRUE solo si el valor de head es 
+distinto del de tail, es decir, solo si hay algún evento distinto de EVENT_UNDEFINED.
+
+...
