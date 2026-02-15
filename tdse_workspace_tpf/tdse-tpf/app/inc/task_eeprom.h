@@ -23,7 +23,7 @@ extern volatile uint32_t g_task_eeprom_tick_cnt;
 /********************** external functions declaration ***********************/
 extern void task_eeprom_init(void *parameters);
 extern void task_eeprom_update(void *parameters);
-bool eeprom_check_and_load(sys_cfg_opening_t *p_data);
+bool eeprom_check_and_load(task_eeprom_id_t identifier, sys_cfg_opening_t *p_data_op, sys_cfg_save_t *p_data_sv);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

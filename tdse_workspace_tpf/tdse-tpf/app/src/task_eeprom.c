@@ -114,7 +114,6 @@ void task_eeprom_init(void *parameters)
 		event = p_task_eeprom_dta->event;
 		LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
 
-		find_latest_slot(p_task_eeprom_dta);
 		LOGGER_LOG("  Init: Last ID: %lu, Slot: %d\r\n", p_task_eeprom_dta->current_id, p_task_eeprom_dta->current_slot_id);
 	}
 
@@ -270,20 +269,21 @@ void task_eeprom_update(void *parameters)
     }
 }
 
-bool eeprom_check_and_load(sys_cfg_opening_t *p_data) {
-
-	uint8_t *p_bytes = (uint8_t*)p_data;	// Se castea (uint8_t*) dado que i2c trabaja en streams de bytes
+bool eeprom_check_and_load(task_eeprom_id_t identifier, sys_cfg_opening_t *p_data_op, sys_cfg_save_t *p_data_sv) {
+	task_eeprom_dta_t *p_task_eeprom_dta = &task_eeprom_dta_list[identifier];
+	uint8_t *p_bytes = (uint8_t*)p_data_op;	// Se castea (uint8_t*) dado que i2c trabaja en streams de bytes
 
     read_eeprom_blocking(MEM_ADDR_OPENING, p_bytes, SIZE_OPENING);
 
     for (uint16_t i = 0; i < SIZE_OPENING; i++) {
         if (p_bytes[i] != 0xFF) {
+            find_latest_slot(p_task_eeprom_dta, p_data_sv);
         	return true;
         }
     }
-
     return false;
 }
+
 
 void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	if (hi2c == &hi2c1) g_i2c_op_complete = true;
