@@ -58,7 +58,7 @@ static uint8_t erase_buffer[PAGE_SIZE];
 /********************** internal functions declaration ***********************/
 
 static uint16_t calc_cyclic_addr(uint16_t slot_idx);
-static void find_latest_slot(task_eeprom_dta_t *dta);
+static void find_latest_slot(task_eeprom_dta_t *dta, sys_cfg_save_t *p_data_sv);
 static int8_t write_eeprom(task_eeprom_dta_t *dta, uint16_t addr, uint8_t* data, uint16_t size);
 static int8_t read_eeprom(uint16_t addr, uint8_t* data, uint16_t size);
 static int8_t read_eeprom_blocking(uint16_t addr, uint8_t* data, uint16_t size);
@@ -359,7 +359,7 @@ static uint32_t read_id(uint16_t slot) {
     return temp_id;
 }
 
-static void find_latest_slot(task_eeprom_dta_t *dta) {
+static void find_latest_slot(task_eeprom_dta_t *dta, sys_cfg_save_t *p_data_sv) {
     uint16_t low = 0;
     uint16_t high = MAX_SLOTS_CYCLIC - 1;
 
@@ -416,7 +416,7 @@ static void find_latest_slot(task_eeprom_dta_t *dta) {
         }
     }
     dta->current_id = read_id(dta->current_slot_id);
-    read_eeprom_blocking(calc_cyclic_addr(dta->current_slot_id), (uint8_t*)&sys_cfg, sizeof(sys_cfg_save_t));
+    read_eeprom_blocking(calc_cyclic_addr(dta->current_slot_id), (uint8_t*)&p_data_sv, sizeof(sys_cfg_save_t));
 }
 
 /********************** end of file ******************************************/

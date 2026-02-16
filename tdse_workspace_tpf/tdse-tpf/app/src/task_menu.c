@@ -52,8 +52,8 @@
 #include "task_actuator_attribute.h"
 #include "task_actuator_interface.h"
 #include "task_clock.h"
+#include "task_eeprom_interface.h"
 #include "display.h"
-#include "EEPROM.h"
 #include "math.h"
 
 /********************** macros and definitions *******************************/
@@ -96,16 +96,6 @@ task_menu_dta_t task_menu_dta =
 void task_display_refresh(void);
 void task_display_menu_1(void);
 void task_display_menu_help(task_menu_st_t state);
-
-bool check_memory_empty(void);
-void memory_save_cfg(sys_cfg_save_t *config);
-void memory_save_op_spin(uint8_t spin);
-void memory_save_op_speed(uint8_t speed);
-void memory_save_op_time(uint32_t time);
-void memory_get_cfg(sys_cfg_save_t *config);
-void memory_get_op_spin(uint8_t *spin);
-void memory_get_op_speed(uint8_t *speed);
-void memory_get_op_time(uint32_t *time);
 
 void motor_open_test(void);
 void motor_close_test(void);
@@ -2639,10 +2629,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
-		for (int i=0; i<PAGE_NUM; i++)
-		{
-			EEPROM_PageErase(i);
-		}
+		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		while(1)
 		{
@@ -2783,117 +2770,4 @@ void task_display_menu_help(task_menu_st_t state)
 		HAL_Delay(5000);
 	}
 }
-
-
-
-bool check_memory_empty(void)
-{
-	uint32_t flag_empty;
-	uint32_t time;
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_TIME, (uint8_t *)&time, EEP_SIZE_TIME);
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_FLAG, (uint8_t *)&flag_empty, EEP_SIZE_FLAG);
-	return (0 == memcmp(&flag_empty, &time, EEP_SIZE_FLAG));
-}
-
-void memory_get_cfg(sys_cfg_save_t *config)
-{
-	uint16_t page;
-	uint16_t offset;
-	uint16_t save_add;
-	int shift_page = log(PAGE_SIZE)/log(2);
-
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_SAVE_ADD, (uint8_t *)&save_add, EEP_SIZE_SAVE_ADD);
-	page = (save_add & MASK_ADDRESS_PAGE) >> shift_page;
-	offset = save_add & MASK_ADDRESS_OFFSET;
-	EEPROM_Read(page, offset, (uint8_t *)config, size_sys_cfg_save);
-}
-
-void memory_get_op_spin(uint8_t *spin)
-{
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_SPIN, spin, EEP_SIZE_SPIN);
-}
-
-void memory_get_op_speed(uint8_t *speed)
-{
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_SPEED, speed, EEP_SIZE_SPEED);
-}
-
-void memory_get_op_time(uint32_t *time)
-{
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_TIME, (uint8_t *)time, EEP_SIZE_TIME);
-}
-
-void memory_save_op_spin(uint8_t spin)
-{
-	EEPROM_Write(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_SPIN, &spin, EEP_SIZE_SPIN);
-}
-
-void memory_save_op_speed(uint8_t speed)
-{
-	EEPROM_Write(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_SPEED, &speed, EEP_SIZE_SPEED);
-}
-
-void memory_save_op_time(uint32_t time)
-{
-	EEPROM_Write(EEP_PAG_CFG_OP, EEP_OFF_CFG_OP_TIME, (uint8_t *)&time, EEP_SIZE_TIME);
-}
-
-void memory_save_cfg(sys_cfg_save_t *config)
-{
-	uint16_t page;
-	uint16_t offset;
-	uint16_t save_add;
-	int shift_page = log(PAGE_SIZE)/log(2);
-
-	EEPROM_Read(EEP_PAG_CFG_OP, EEP_OFF_CFG_SAVE_ADD, (uint8_t *)&save_add, EEP_SIZE_SAVE_ADD);
-	page = (save_add & MASK_ADDRESS_PAGE) >> shift_page;
-	offset = save_add & MASK_ADDRESS_OFFSET;
-
-	if((offset + size_sys_cfg_save) >= PAGE_SIZE) page++;
-	offset = (offset + size_sys_cfg_save) % PAGE_SIZE;
-
-	if((offset + size_sys_cfg_save) <= PAGE_SIZE)
-	{
-		EEPROM_Write(page, offset, (uint8_t *)config, size_sys_cfg_save);
-	}
-	else if(page < (PAGE_SIZE-1))
-	{
-		EEPROM_Write(page, offset, (uint8_t *)config, size_sys_cfg_save);
-	}
-	else
-	{
-		page = EEP_PAG_SAVE_START;
-		offset = 0;
-		EEPROM_Write(page, offset, (uint8_t *)config, size_sys_cfg_save);
-	}
-
-	save_add = (page << shift_page) | offset;
-	EEPROM_Write(EEP_PAG_CFG_OP, EEP_OFF_CFG_SAVE_ADD, (uint8_t *)&save_add, EEP_SIZE_SAVE_ADD);
-}
-
-
-
-/*void motor_open_test(void)
-{
-	motorMoveRight(1, 1000);
-}
-
-void motor_close_test(void)
-{
-	motorMoveLeft(1, 1000);
-}
-
-void motorOpen(sys_cfg_dta_t *cfg)
-{
-	if(cfg->Spin == RIGHT) motorMoveRight(cfg->Speed, cfg->TimeOpening);
-	else motorMoveLeft(cfg->Speed, cfg->TimeOpening);
-}
-
-void motorClose(sys_cfg_dta_t *cfg)
-{
-	if(cfg->Spin == RIGHT) motorMoveLeft(cfg->Speed, cfg->TimeOpening);
-	else motorMoveRight(cfg->Speed, cfg->TimeOpening);
-}*/
-
-
 /********************** end of file ******************************************/
