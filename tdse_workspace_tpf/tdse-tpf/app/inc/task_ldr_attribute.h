@@ -31,9 +31,7 @@ typedef enum task_sensor_st {ST_LDR_XX_ON,
 						     ST_LDR_XX_RISING} task_ldr_st_t;
 
 /* Identifier of Task Sensor */
-/* typedef enum task_sensor_id {ID_BTN_ENT,
-							 ID_BTN_NEX,
-							 ID_BTN_ESC} task_sensor_id_t; */
+
 typedef struct {
 	ADC_HandleTypeDef*  hadc;
 	task_ldr_ev_t	signal_up;
