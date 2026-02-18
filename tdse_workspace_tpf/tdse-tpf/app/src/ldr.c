@@ -15,43 +15,44 @@
 /********************** internal data declaration ****************************/
 
 /********************** internal functions declaration ***********************/
-//uint16_t LDR_Read_Average(ADC_HandleTypeDef *hadc);
-//HAL_StatusTypeDef ADC_Poll_Read(ADC_HandleTypeDef *hadc, uint16_t *value);
 
 /********************** internal data definition *****************************/
 static volatile uint16_t sample_array[SAMPLES_SIZE];
 static volatile uint16_t sample_idx = 0;
-static volatile bool b_is_running = false;
-static volatile bool b_done = false;
+static volatile bool b_reading = false;
+static volatile bool b_data_ready = false;
 static volatile uint16_t ldr_average = 0;
 
 /********************** external data declaration *****************************/
 
 /********************** external functions definition ************************/
 void LDR_Request(void) {
-	if(b_is_running) return;
+	if(b_reading) return;
 	sample_idx = 0;
-	b_done = false;
-	b_is_running = true;
+	b_reading = true;
+	b_data_ready = false;
+
+	HAL_ADC_Start_IT(&hadc1);
 }
 
 void LDR_Update(ADC_HandleTypeDef *hadc) {
 
-	if (b_is_running && sample_idx == 0) {
-		HAL_ADC_Start_IT(hadc);
+	if (b_reading || b_data_ready) {
+		return;
 	}
 
-	if(b_done){
-		uint32_t sum = 0;
-		for (int i = 0; i < SAMPLES_SIZE; i++) {
-			sum += sample_array[i];
-		}
-		ldr_average = sum / SAMPLES_SIZE;
+	uint32_t sum = 0;
+
+	for (int i = 0; i < SAMPLES_SIZE; i++) {
+		sum += sample_array[i];
 	}
+
+	ldr_average = sum / SAMPLES_SIZE;
+	b_data_ready = true;
 }
 
 bool LDR_Is_Data_Ready(void) {
-    return b_done;
+    return b_data_ready;
 }
 
 uint16_t LDR_Get_Average_Value(void) {
@@ -62,12 +63,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 
 	sample_array[sample_idx++] = HAL_ADC_GetValue(hadc);
 
-	//LOGGER_LOG("ADC sample %u\n", sample_array[sample_idx-1]);
+	if(sample_idx < SAMPLES_SIZE){
+		HAL_ADC_Start_IT(hadc);
+	}
 
-	if (sample_idx >= SAMPLES_SIZE) {
+	else {
 		HAL_ADC_Stop_IT(hadc);
-	    b_done = true;
-	    b_is_running = false;
+		b_reading = false;
 	}
 }
 
