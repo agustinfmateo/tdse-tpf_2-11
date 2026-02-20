@@ -114,11 +114,6 @@ typedef struct
 	bool			flag;
 } task_menu_dta_t;
 
-//typedef enum task_motor_id {ID_MOTOR_1,
-//							 ID_MOTOR_2} task_motor_id_t;
-
-//typedef enum task_power_id {ON,
-//							 OFF} task_power_id_t;
 
 typedef enum task_spin_id {LEFT,
 							 RIGHT} task_spin_id_t;
@@ -131,44 +126,16 @@ typedef enum task_light_id {LOW,
 							MED,
 							HIGH} task_light_id_t;
 
-/*typedef struct
-{
-	task_motor_id_t motor_id;
-	task_power_id_t Power;
-	uint16_t Speed;
-	task_spin_id_t Spin;
-} task_motor_dta_t;*/
-
-typedef struct
-{
-	uint32_t 			data_id;
-	task_mode_id_t 		mode;
-	uint8_t 			time_open_hour;
-	uint8_t 			time_open_minute;
-	uint8_t 			time_close_hour;
-	uint8_t 			time_close_minute;
-	task_light_id_t 	light_open;
-	task_light_id_t 	light_close;
-} sys_cfg_save_t;
-
-typedef struct
-{
-	bool SpinRight;
-	uint8_t Speed;
-	uint32_t TimeOpening;
-} sys_cfg_opening_t;
-
 typedef struct
 {
 	sys_cfg_save_t		*sys_cfg_save;
-	//sys_cfg_opening_t	*sys_cfg_op;
+	sys_cfg_opening_t	*sys_cfg_op;
 	bool 				open;
 } sys_cfg_dta_t;
 
 /********************** external data declaration ****************************/
 extern task_menu_dta_t task_menu_dta;
 extern sys_cfg_save_t *p_sys_cfg_sv;
-//extern sys_cfg_opening_t *p_sys_cfg_op;
 extern uint32_t time_opening;
 extern bool b_spin_right;
 extern uint8_t speed_opening;

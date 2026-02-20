@@ -67,7 +67,7 @@ typedef struct {
 } task_cfg_t;
 
 typedef struct {
-    uint32_t WCET;				// Worst-case execution time (microseconds)
+    uint32_t WCET;				    // Worst-case execution time (microseconds)
 } task_dta_t;
 
 /********************** internal data declaration ****************************/

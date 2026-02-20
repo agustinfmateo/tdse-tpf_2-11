@@ -22,6 +22,9 @@ extern "C" {
 extern uint32_t g_task_eeprom_cnt;
 extern volatile uint32_t g_task_eeprom_tick_cnt;
 
+extern sys_cfg_opening_t sys_op;
+extern sys_cfg_save_t sys_cfg;
+
 /********************** external functions declaration ***********************/
 extern void task_eeprom_init(void *parameters);
 extern void task_eeprom_update(void *parameters);

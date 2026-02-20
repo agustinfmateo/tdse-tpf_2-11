@@ -74,14 +74,8 @@ volatile uint32_t g_task_eeprom_tick_cnt;
 
 extern I2C_HandleTypeDef hi2c1;
 
-
-//Esto hay que borrarlo cuando decidamos donde poner las estructuras
-//
-//
 sys_cfg_opening_t sys_op;
 sys_cfg_save_t sys_cfg;
-
-
 
 /********************** external functions definition ************************/
 void task_eeprom_init(void *parameters)

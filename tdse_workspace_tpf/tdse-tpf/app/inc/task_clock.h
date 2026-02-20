@@ -17,6 +17,10 @@ extern "C" {
 
 /********************** typedef **********************************************/
 
+typedef enum clock_id {CLOCK,
+					   TIME_OPEN,
+					   TIME_CLOSE} clock_id_t;
+
 /********************** external data declaration ****************************/
 extern TIM_HandleTypeDef htim1;
 extern volatile uint8_t g_clock[2];

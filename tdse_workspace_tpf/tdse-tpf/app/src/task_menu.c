@@ -52,6 +52,7 @@
 #include "task_actuator_attribute.h"
 #include "task_actuator_interface.h"
 #include "task_clock.h"
+#include "task_eeprom.h"
 #include "task_eeprom_interface.h"
 #include "display.h"
 #include "math.h"
@@ -65,32 +66,10 @@
 #define DEL_MEN_XX_MAX				500ul
 #define DEL_MEN_SAVE                3ul
 
-#define EEP_PAG_CFG_OP				0
-#define EEP_PAG_SAVE_START			1
-#define EEP_OFF_CFG_OP_SPIN			0
-#define EEP_OFF_CFG_OP_SPEED		1
-#define EEP_OFF_CFG_OP_TIME			2
-#define EEP_OFF_CFG_OP_FLAG			6
-#define EEP_OFF_CFG_SAVE_ADD		10
-#define EEP_SIZE_SPIN				1
-#define EEP_SIZE_SPEED				1
-#define EEP_SIZE_TIME				4
-#define EEP_SIZE_FLAG				4
-#define EEP_SIZE_SAVE_ADD			2
-
-#define MASK_ADDRESS_PAGE			0x7fc0
-#define MASK_ADDRESS_OFFSET			0x003f
-
-typedef enum clock_id {CLOCK,
-						TIME_OPEN,
-						TIME_CLOSE} clock_id_t;
-
 /********************** internal data declaration ****************************/
 task_menu_dta_t task_menu_dta =
 	{DEL_MEN_XX_MIN, ST_SET_UP_OPENING_1_SPIN, EV_BTN_ENT_UP, false};
 
-
-#define MENU_DTA_QTY	(sizeof(task_menu_dta)/sizeof(task_menu_dta_t))
 
 /********************** internal functions declaration ***********************/
 void task_display_refresh(void);
@@ -108,16 +87,6 @@ const char *p_task_menu_ 		= "Non-Blocking & Update By Time Code";
 
 clock_id_t clock_id;
 
-//task_motor_dta_t motor_1 = {ID_MOTOR_1, OFF, 0, LEFT};
-//task_motor_dta_t motor_2 = {ID_MOTOR_2, OFF, 0, LEFT};
-
-//char *motor_list[] = {"MOTOR 1","MOTOR 2"};
-//char *power_list[] = {"ON","OFF"};
-//char *spin_list[] = {"L","R"};
-
-//char motor = 0;
-//uint8_t aux_spin = LEFT;
-//char aux_power = ON;
 static bool mem_empty;
 static uint8_t clk_array[4] = {0, 0, 0, 0};
 
@@ -130,17 +99,9 @@ volatile uint32_t g_task_menu_tick_cnt;
 uint8_t aux_spin;
 uint8_t aux_speed;
 uint32_t aux_timer;
-sys_cfg_save_t 			sys_cfg_save;
-//sys_cfg_opening_t 		sys_cfg_opening = {&r_spin, &aux_speed, &aux_timer};
-//sys_cfg_dta_t sys_cfg_dta = {&sys_cfg_save, &sys_cfg_opening, false};
-sys_cfg_dta_t sys_cfg_dta = {&sys_cfg_save, false};
 
-sys_cfg_save_t *p_sys_cfg_sv = &sys_cfg_save;
-//sys_cfg_opening_t *p_sys_cfg_op = &sys_cfg_opening;
+sys_cfg_dta_t sys_cfg_dta = {&sys_cfg, &sys_op, false};
 
-uint32_t time_opening;
-bool b_spin_right;
-uint8_t speed_opening;
 /********************** external functions definition ************************/
 void task_menu_init(void *parameters)
 {
@@ -186,7 +147,9 @@ void task_menu_init(void *parameters)
 	displayCharPositionWrite(0, 1);
 	displayStringWrite("   sistema...   ");
 	HAL_Delay(1000);
-	mem_empty = check_memory_empty();
+
+	mem_empty = eeprom_check_and_load(ID_EEPROM, p_sys_cfg_dta->sys_cfg_op, p_sys_cfg_dta->sys_cfg_save);
+
 	if(mem_empty)
 	{
 		displayCharPositionWrite(0, 0);
@@ -213,9 +176,6 @@ void task_menu_init(void *parameters)
 	else
 	{
 		p_task_menu_dta->state = ST_SET_UP_CHECK_1_OPENCLOSE;
-		memory_get_cfg(p_sys_cfg_dta->sys_cfg_save);
-		memory_get_op_speed(&speed_opening);
-		memory_get_op_spin(spin);
 
 		task_display_menu_help(p_task_menu_dta->state);
 
@@ -294,7 +254,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
 
-						memory_save_op_spin((uint8_t)RIGHT);
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = RIGHT;
+						//put_event_task_eeprom(EV_EEPROM_SAVE_OPENING, ID_EEPROM);
+
 						clock_UI_Timeout_reset();
 
 						displayCharPositionWrite(0, 0);
@@ -303,7 +265,6 @@ void task_menu_update(void *parameters)
 						displayStringWrite("    velocidad   ");
 						HAL_Delay(5000);
 
-						//task_display_menu_help(p_task_menu_dta->state);
 						aux_speed = 1;
 
 						displayCharPositionWrite(0, 0);
@@ -315,7 +276,8 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
-						memory_save_op_spin((uint8_t)LEFT);
+
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = RIGHT;
 						clock_UI_Timeout_reset();
 
 						displayCharPositionWrite(0, 0);
@@ -371,7 +333,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_3_TIME_CLOSE;
 
-						memory_save_op_speed(aux_speed);
+						p_sys_cfg_dta->sys_cfg_op->Speed = aux_speed;
+						//put_event_task_eeprom(EV_EEPROM_SAVE_OPENING, ID_EEPROM);
+
 						clock_UI_Timeout_reset();
 
 						displayCharPositionWrite(0, 0);
@@ -474,8 +438,9 @@ void task_menu_update(void *parameters)
 
 						//op_set_opening_time
 						//reset_clock
+						p_sys_cfg_dta->sys_cfg_op->TimeOpening = aux_timer;
+						put_event_task_eeprom(EV_EEPROM_SAVE_OPENING, ID_EEPROM);
 
-						memory_save_op_time(aux_timer);
 						p_sys_cfg_dta->sys_cfg_save->mode = MANUAL;
 						p_sys_cfg_dta->sys_cfg_save->light_close = LOW;
 						p_sys_cfg_dta->sys_cfg_save->light_open = LOW;
@@ -2146,8 +2111,7 @@ void task_menu_update(void *parameters)
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						HAL_NVIC_DisableIRQ(D10_EXTI_IRQn);
-						HAL_NVIC_DisableIRQ(D11_EXTI_IRQn);
+						HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 						app_sleep = true;
 						clock_UI_Timeout_reset();
 						HAL_PWR_EnableSleepOnExit();
@@ -2611,8 +2575,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(BTN_ENT_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(D10_EXTI_IRQn);
-		HAL_NVIC_DisableIRQ(D11_EXTI_IRQn);
+		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
@@ -2620,8 +2583,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(BTN_NEX_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(D10_EXTI_IRQn);
-		HAL_NVIC_DisableIRQ(D11_EXTI_IRQn);
+		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
