@@ -16,7 +16,7 @@ void setPWM(TIM_HandleTypeDef *timer, uint32_t channel, uint8_t pulse);
 void motorMoveL9110S(const task_actuator_cfg_t *actuator, bool spinRight);
 void motorStopL9110S(const task_actuator_cfg_t *actuator);
 
-void motorMoveL298N(const task_actuator_cfg_t *actuator, bool spinRight);
+void motorMoveL298N(const task_actuator_cfg_t *actuator);
 void motorStopL298N(const task_actuator_cfg_t *actuator);
 
 /********************** internal data definition *****************************/
@@ -25,13 +25,13 @@ void motorStopL298N(const task_actuator_cfg_t *actuator);
 
 /********************** external functions definition ************************/
 
-void motorMove(const task_actuator_cfg_t *actuator, bool spinRight)
+void motorMove(const task_actuator_cfg_t *actuator)
 {
 #if DRIVER_MOTOR==DRIVER1_L9110S
 	motorMove(actuator, spinRight);
 #endif
 #if DRIVER_MOTOR==DRIVER2_L298N
-	motorMoveL298N(actuator, spinRight);
+	motorMoveL298N(actuator);
 #endif
 }
 
@@ -87,15 +87,15 @@ void motorStopL9110S(const task_actuator_cfg_t *actuator)
 #endif
 
 #if DRIVER_MOTOR==DRIVER2_L298N
-void motorMoveL298N(const task_actuator_cfg_t *actuator, bool spinRight) {
-	if(spinRight) {
-		setPWM(actuator->timer_handle, actuator->timer_channel, *actuator->speed);
+void motorMoveL298N(const task_actuator_cfg_t *actuator) {
+	if(actuator->sys_cfg_op->SpinRight) {
+		setPWM(actuator->timer_handle, actuator->timer_channel, actuator->sys_cfg_op->Speed);
 		HAL_GPIO_WritePin(actuator->gpio_port_in1, actuator->pin_in1, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(actuator->gpio_port_in2, actuator->pin_in2, GPIO_PIN_RESET);
 		HAL_TIM_PWM_Start(actuator->timer_handle, actuator->timer_channel);
 	}
 	else {
-		setPWM(actuator->timer_handle, actuator->timer_channel, *actuator->speed);
+		setPWM(actuator->timer_handle, actuator->timer_channel, actuator->sys_cfg_op->Speed);
 		HAL_GPIO_WritePin(actuator->gpio_port_in1, actuator->pin_in1, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(actuator->gpio_port_in2, actuator->pin_in2, GPIO_PIN_SET);
 		HAL_TIM_PWM_Start(actuator->timer_handle, actuator->timer_channel);

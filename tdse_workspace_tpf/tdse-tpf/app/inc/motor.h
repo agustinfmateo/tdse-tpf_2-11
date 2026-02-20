@@ -31,7 +31,7 @@ extern TIM_HandleTypeDef htim3;
 
 /********************** external functions declaration ***********************/
 
-void motorMove(const task_actuator_cfg_t *actuator, bool spinRight);
+void motorMove(const task_actuator_cfg_t *actuator);
 void motorStop(const task_actuator_cfg_t *actuator);
 
 /********************** End of CPP guard *************************************/

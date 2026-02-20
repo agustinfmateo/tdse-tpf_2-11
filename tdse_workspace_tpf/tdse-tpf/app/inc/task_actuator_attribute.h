@@ -45,6 +45,8 @@ extern "C" {
 
 /********************** inclusions *******************************************/
 
+#include "task_eeprom_attribute.h"
+
 /********************** macros ***********************************************/
 
 /********************** typedef **********************************************/
@@ -76,9 +78,7 @@ typedef struct
 	uint16_t            pin_in2;
 
 	//Conf. de apertura
-	bool 			   *spinRight;
-	uint8_t            *speed;
-	uint32_t 		   *timeOp;
+	sys_cfg_opening_t *sys_cfg_op;
 } task_actuator_cfg_t;
 
 typedef struct

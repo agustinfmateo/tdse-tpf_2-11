@@ -49,19 +49,16 @@
 #include "task_actuator_attribute.h"
 #include "task_actuator_interface.h"
 #include "task_menu_attribute.h"
+#include "task_eeprom.h"
+#include "task_eeprom_attribute.h"
 
 /********************** macros and definitions *******************************/
 #define G_TASK_ACT_CNT_INIT			0ul
 #define G_TASK_ACT_TICK_CNT_INI		0ul
 
-//Esto ahora es un define pero despues va la variable
-#define CURTAIN_MOVE_TIME_MS  15000
-#define SPEED_PWM  8
-#define SPIN true
-
 /********************** internal data declaration ****************************/
 const task_actuator_cfg_t task_actuator_cfg_list[] = {
-	{ID_BINDS, &htim3, TIM_CHANNEL_3, GPIOC, In1_Pin, GPIOC, In2_Pin, &b_spin_right, &speed_opening, &time_opening}
+	{ID_BINDS, &htim3, TIM_CHANNEL_3, GPIOC, In1_Pin, GPIOC, In2_Pin, &sys_op}
 };
 
 #define ACTUATOR_CFG_QTY	(sizeof(task_actuator_cfg_list)/sizeof(task_actuator_cfg_t))
@@ -170,7 +167,7 @@ void task_actuator_update(void *parameters)
 						p_task_actuator_dta->flag = false;
 						p_task_actuator_dta->state = ST_BINDS_XX_CLOSING;
 						p_task_actuator_dta->tick_start = HAL_GetTick();
-						motorMove(p_task_actuator_cfg, !(*p_task_actuator_cfg->spinRight));
+						motorMove(p_task_actuator_cfg);
 					}
 					break;
 
@@ -181,13 +178,13 @@ void task_actuator_update(void *parameters)
 						p_task_actuator_dta->flag = false;
 						p_task_actuator_dta->state = ST_BINDS_XX_OPENING;
 						p_task_actuator_dta->tick_start = HAL_GetTick();
-						motorMove(p_task_actuator_cfg, *p_task_actuator_cfg->spinRight);
+						motorMove(p_task_actuator_cfg);
 					}
 					break;
 
 				case ST_BINDS_XX_OPENING:
 
-					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= *p_task_actuator_cfg->timeOp)
+					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= p_task_actuator_cfg->sys_cfg_op->TimeOpening)
 					{
 						motorStop(p_task_actuator_cfg);
 						if(p_task_actuator_dta->event == EV_BINDS_XX_OPEN){
@@ -196,14 +193,14 @@ void task_actuator_update(void *parameters)
 						else{
 							p_task_actuator_dta->state = ST_BINDS_XX_CLOSING;
 							p_task_actuator_dta->tick_start = HAL_GetTick();
-							motorMove(p_task_actuator_cfg, !(*p_task_actuator_cfg->spinRight));
+							motorMove(p_task_actuator_cfg);
 						}
 					}
 					break;
 
 				case ST_BINDS_XX_CLOSING:
 
-					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= *p_task_actuator_cfg->timeOp)
+					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= p_task_actuator_cfg->sys_cfg_op->TimeOpening)
 					{
 						motorStop(p_task_actuator_cfg);
 						if(p_task_actuator_dta->event == EV_BINDS_XX_CLOSE){
@@ -212,7 +209,7 @@ void task_actuator_update(void *parameters)
 						else{
 							p_task_actuator_dta->state = ST_BINDS_XX_OPENING;
 							p_task_actuator_dta->tick_start = HAL_GetTick();
-							motorMove(p_task_actuator_cfg, !(*p_task_actuator_cfg->spinRight));
+							motorMove(p_task_actuator_cfg);
 						}
 					}
 					break;
