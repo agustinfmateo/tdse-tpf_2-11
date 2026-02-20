@@ -47,13 +47,11 @@
 /* Application & Tasks includes. */
 #include "board.h"
 #include "app.h"
-#include "task_menu_attribute.h"
 #include "task_menu_interface.h"
-#include "task_actuator_attribute.h"
 #include "task_actuator_interface.h"
 #include "task_clock.h"
-#include "task_eeprom.h"
 #include "task_eeprom_interface.h"
+#include "task_eeprom.h"
 #include "display.h"
 #include "math.h"
 

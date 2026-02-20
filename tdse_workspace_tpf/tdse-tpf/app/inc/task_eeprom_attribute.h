@@ -53,24 +53,6 @@ typedef struct {
     uint16_t           current_slot_id;
 } task_eeprom_dta_t;
 
-typedef struct
-{
-	uint32_t 			data_id;
-	task_mode_id_t 		mode;
-	uint8_t 			time_open_hour;
-	uint8_t 			time_open_minute;
-	uint8_t 			time_close_hour;
-	uint8_t 			time_close_minute;
-	task_light_id_t 	light_open;
-	task_light_id_t 	light_close;
-} sys_cfg_save_t;
-
-typedef struct
-{
-	bool SpinRight;
-	uint8_t Speed;
-	uint32_t TimeOpening;
-} sys_cfg_opening_t;
 
 /********************** external data declaration ****************************/
 extern task_eeprom_dta_t task_eeprom_dta_list[];

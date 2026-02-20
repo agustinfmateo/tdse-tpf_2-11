@@ -45,6 +45,9 @@ extern "C" {
 
 /********************** inclusions *******************************************/
 
+#include <stdbool.h>
+#include "system_cfg_attribute.h"
+
 /********************** macros ***********************************************/
 
 /********************** typedef **********************************************/
@@ -114,18 +117,6 @@ typedef struct
 	bool			flag;
 } task_menu_dta_t;
 
-
-typedef enum task_spin_id {LEFT,
-							 RIGHT} task_spin_id_t;
-
-typedef enum task_mode_id {MANUAL,
-							TIME,
-							LIGHT} task_mode_id_t;
-
-typedef enum task_light_id {LOW,
-							MED,
-							HIGH} task_light_id_t;
-
 typedef struct
 {
 	sys_cfg_save_t		*sys_cfg_save;
@@ -135,10 +126,6 @@ typedef struct
 
 /********************** external data declaration ****************************/
 extern task_menu_dta_t task_menu_dta;
-extern sys_cfg_save_t *p_sys_cfg_sv;
-extern uint32_t time_opening;
-extern bool b_spin_right;
-extern uint8_t speed_opening;
 
 /********************** external functions declaration ***********************/
 
