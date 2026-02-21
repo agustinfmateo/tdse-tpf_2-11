@@ -187,6 +187,7 @@ void task_actuator_update(void *parameters)
 					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= p_task_actuator_cfg->sys_cfg_op->TimeOpening)
 					{
 						motorStop(p_task_actuator_cfg);
+						p_task_actuator_cfg->sys_cfg_op->SpinRight = !p_task_actuator_cfg->sys_cfg_op->SpinRight;
 						if(p_task_actuator_dta->event == EV_BINDS_XX_OPEN){
 							p_task_actuator_dta->state = ST_BINDS_XX_OPEN;
 						}
@@ -203,6 +204,7 @@ void task_actuator_update(void *parameters)
 					if ((HAL_GetTick()-p_task_actuator_dta->tick_start) >= p_task_actuator_cfg->sys_cfg_op->TimeOpening)
 					{
 						motorStop(p_task_actuator_cfg);
+						p_task_actuator_cfg->sys_cfg_op->SpinRight = !p_task_actuator_cfg->sys_cfg_op->SpinRight;
 						if(p_task_actuator_dta->event == EV_BINDS_XX_CLOSE){
 							p_task_actuator_dta->state = ST_BINDS_XX_CLOSE;
 						}
