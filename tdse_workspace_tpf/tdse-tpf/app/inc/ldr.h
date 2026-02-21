@@ -13,6 +13,7 @@ extern "C" {
 /********************** typedef **********************************************/
 
 /********************** external data declaration ****************************/
+extern ADC_HandleTypeDef hadc1;
 
 /********************** external functions declaration ***********************/
 void LDR_Request(ADC_HandleTypeDef *hadc);

@@ -53,7 +53,6 @@
 #include "task_eeprom_interface.h"
 #include "task_eeprom.h"
 #include "display.h"
-#include "math.h"
 
 /********************** macros and definitions *******************************/
 #define G_TASK_MEN_CNT_INI			0ul
@@ -62,33 +61,28 @@
 #define DEL_MEN_XX_MIN				0ul
 #define DEL_MEN_XX_MED				50ul
 #define DEL_MEN_XX_MAX				500ul
-#define DEL_MEN_SAVE                3ul
 
 /********************** internal data declaration ****************************/
 task_menu_dta_t task_menu_dta =
 	{DEL_MEN_XX_MIN, ST_SET_UP_OPENING_1_SPIN, EV_BTN_ENT_UP, false};
-
 
 /********************** internal functions declaration ***********************/
 void task_display_refresh(void);
 void task_display_menu_1(void);
 void task_display_menu_help(task_menu_st_t state);
 
-void motor_open_test(void);
-void motor_close_test(void);
-void motorOpen(sys_cfg_dta_t *cfg);
-void motorClose(sys_cfg_dta_t *cfg);
-
 /********************** internal data definition *****************************/
 const char *p_task_menu 		= "Task Menu (Interactive Menu)";
 const char *p_task_menu_ 		= "Non-Blocking & Update By Time Code";
 
-clock_id_t clock_id;
+typedef enum aux_clock_id {CLOCK,
+					   TIME_OPEN,
+					   TIME_CLOSE} aux_clock_id_t;
+
+aux_clock_id_t clock_id;
 
 static bool mem_empty;
 static uint8_t clk_array[4] = {0, 0, 0, 0};
-
-const uint16_t size_sys_cfg_save = sizeof(sys_cfg_save_t);
 
 /********************** external data declaration ****************************/
 uint32_t g_task_menu_cnt;
@@ -146,7 +140,7 @@ void task_menu_init(void *parameters)
 	displayStringWrite("   sistema...   ");
 	HAL_Delay(1000);
 
-	mem_empty = eeprom_check_and_load(ID_EEPROM, p_sys_cfg_dta->sys_cfg_op, p_sys_cfg_dta->sys_cfg_save);
+	mem_empty = !eeprom_check_and_load(ID_EEPROM, p_sys_cfg_dta->sys_cfg_op, p_sys_cfg_dta->sys_cfg_save);
 
 	if(mem_empty)
 	{
@@ -160,31 +154,32 @@ void task_menu_init(void *parameters)
 		displayStringWrite("En un momento se");
 		displayCharPositionWrite(0, 1);
 		displayStringWrite("movera el motor ");
-		HAL_Delay(5000);
-		//motor_open_test();
 
+		p_sys_cfg_dta->sys_cfg_op->Speed=1;
+		p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
+		p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
+
+		HAL_Delay(3000);
+
+		put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+
+		help = true;
 		task_display_menu_help(p_task_menu_dta->state);
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite(" Abrio o cerro? ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("Cerro      Abrio");
 		clock_UI_Timeout_reset();
 	}
 	else
 	{
 		p_task_menu_dta->state = ST_SET_UP_CHECK_1_OPENCLOSE;
 
+		help = true;
 		task_display_menu_help(p_task_menu_dta->state);
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("   Esta abierta? ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("NO -A medias- SI");
 		clock_UI_Timeout_reset();
 	}
 	g_task_menu_tick_cnt = G_TASK_MEN_TICK_CNT_INI;
-	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
+	HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
 }
 
 
@@ -192,7 +187,7 @@ void task_menu_update(void *parameters)
 {
 	task_menu_dta_t *p_task_menu_dta;
 	sys_cfg_dta_t *p_sys_cfg_dta;
-	clock_id_t *p_clock_id = &clock_id;
+	aux_clock_id_t *p_clock_id = &clock_id;
 	bool b_time_update_required = false;
 	char menu_str[20];
 
@@ -2118,7 +2113,7 @@ void task_menu_update(void *parameters)
 					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						//op_time_1_min
+						task_display_menu_1();
 					}
 					break;
 
@@ -2573,28 +2568,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(BTN_ENT_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
-		HAL_Delay(500);
+		HAL_Delay(75);
 	}
 	else if(BTN_NEX_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
-		HAL_Delay(500);
+		HAL_Delay(75);
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
 		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		while(1)
-		{
-			//Reset
-		}
 	}
 
 }
@@ -2621,113 +2611,195 @@ void task_display_refresh(void)
 
 void task_display_menu_help(task_menu_st_t state)
 {
+	static uint32_t star_tick = 0;
+	static uint8_t cnt = 0;
+
+	if(star_tick == 0) star_tick = HAL_GetTick();
+	else if(star_tick - HAL_GetTick() < cnt * 3000) return;
+
 	if(state == ST_SET_UP_OPENING_1_SPIN)
 	{
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Indique lo que  ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("sucedio con la  ");
-		HAL_Delay(3000);
+		if(cnt == 0)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Indique lo que  ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("sucedio con la  ");
+			cnt++;
+		}
+		else if(cnt==1)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("    Persiana    ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("                ");
+			cnt++;
+		}
+		else if(cnt==2)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("ENTER = abrio   ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("ESCAPE = cerro  ");
+			cnt++;
+		}
+		else if(cnt >= 3)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite(" Abrio o cerro? ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("Cerro      Abrio");
+			clock_UI_Timeout_reset();
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("    Persiana    ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("                ");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("ENTER = abrio   ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("ESCAPE = cerro  ");
-		HAL_Delay(5000);
+			help = false;
+			star_tick = 0;
+			cnt = 0;
+		}
 	}
 	else if(state == ST_SET_UP_OPENING_3_TIME_CLOSE)
 	{
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Presione NEXT   ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("y la cortina    ");
-		HAL_Delay(3000);
+		if(cnt==0)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Presione NEXT   ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("y la cortina    ");
+			cnt++;
+		}
+		else if(cnt==1)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("y la cortina    ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("bajara hasta que");
+			cnt++;
+		}
+		else if(cnt==2)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("bajara hasta que");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("lo presione nue-");
+			cnt++;
+		}
+		else if(cnt==3)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("lo presione nue-");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("-vamente        ");
+			cnt++;
+		}
+		else if(cnt>=4)
+		{
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("y la cortina    ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("bajara hasta que");
-		HAL_Delay(3000);
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Presione 'Next' ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("para comenzar   ");
+			clock_UI_Timeout_reset();
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("bajara hasta que");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("lo presione nue-");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("lo presione nue-");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("-vamente        ");
-		HAL_Delay(3000);
+			help = false;
+			star_tick = 0;
+			cnt = 0;
+		}
 	}
 	else if(state == ST_SET_UP_CHECK_1_OPENCLOSE)
 	{
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Indique el      ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("estado de la    ");
-		HAL_Delay(3000);
+		if(cnt == 0)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Indique el      ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("estado de la    ");
+			HAL_Delay(3000);
+			cnt++;
+		}
+		else if(cnt==1)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("persiana:abierta");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite(" o cerrada      ");
+			cnt++;
+		}
+		else if(cnt==2)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Si la persiana  ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("esta medio abi- ");
+			cnt++;
+		}
+		else if(cnt==3)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("esta medio abi- ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("-erta al apretar");
+			cnt++;
+		}
+		else if(cnt==4)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("-erta al apretar");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("NEXT la persiana");
+			cnt++;
+		}
+		else if(cnt==5)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("NEXT la persiana");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("se cerrara hasta");
+			cnt++;
+		}
+		else if(cnt==6)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("se cerrara hasta");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("que vuelva a    ");
+			cnt++;
+		}
+		else if(cnt==7)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("que vuelva a    ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("apretar NEXT    ");
+			cnt++;
+		}
+		else if(cnt==8)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Enter = ABIERTA ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("Escape = CERRADA");
+			cnt++;
+		}
+		else if(cnt==9)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("Escape = CERRADA");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("Next = A MEDIAS ");
+			cnt++;
+		}
+		else if(cnt>=10)
+		{
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("   Esta abierta? ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("NO -A medias- SI");
+			clock_UI_Timeout_reset();
 
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("persiana:abierta");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite(" o cerrada      ");
-		HAL_Delay(5000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Si la persiana  ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("esta medio abi- ");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("esta medio abi- ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("-erta al apretar");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("-erta al apretar");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("NEXT la persiana");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("NEXT la persiana");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("se cerrara hasta");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("se cerrara hasta");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("que vuelva a    ");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("que vuelva a    ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("apretar NEXT    ");
-		HAL_Delay(3000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Enter = ABIERTA ");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("Escape = CERRADA");
-		HAL_Delay(5000);
-
-		displayCharPositionWrite(0, 0);
-		displayStringWrite("Escape = CERRADA");
-		displayCharPositionWrite(0, 1);
-		displayStringWrite("Next = A MEDIAS ");
-		HAL_Delay(5000);
+			help = false;
+			star_tick = 0;
+			cnt = 0;
+		}
 	}
 }
+
 /********************** end of file ******************************************/

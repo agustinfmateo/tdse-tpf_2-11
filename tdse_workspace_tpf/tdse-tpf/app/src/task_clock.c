@@ -3,6 +3,10 @@
 #include "main.h"
 
 /* Demo includes. */
+#include "logger.h"
+#include "dwt.h"
+
+/* Application & Tasks includes. */
 #include "task_clock.h"
 #include "task_menu_attribute.h"
 #include "task_menu_interface.h"
@@ -16,6 +20,7 @@
 /********************** internal data declaration ****************************/
 static uint8_t APP_UI_Timeout;
 static uint8_t APP_UI_Timeout_cnt;
+uint32_t WCET_clock;
 
 /********************** internal functions declaration ***********************/
 
@@ -50,7 +55,7 @@ void clock_init(void)
 
 void clock_UI_Timeout_set(uint8_t ui_timeout_minutes)
 {
-	APP_UI_Timeout = ui_timeout_minutes;
+	APP_UI_Timeout = ui_timeout_minutes*60;
 }
 
 void clock_UI_Timeout_reset(void)
@@ -60,98 +65,118 @@ void clock_UI_Timeout_reset(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	/* Clock Update */
-	if(g_clock[1] < 59) g_clock[1]++;
-	else if(g_clock[0] < 23)
-	{
-		g_clock[1] = 0;
-		g_clock[0]++;
-	}
-	else
-	{
-		g_clock[1] = 0;
-		g_clock[0] = 0;
-	}
+	cycle_counter_reset();
 
+	static uint32_t cnt_sec = 0;
+	static uint32_t cycle_counter_time_us;
 
-	if(app_cfg_cplt)
+	cnt_sec++;
+
+	if(!app_sleep)
 	{
-		if(p_sys_cfg_sv->mode == TIME)
+		APP_UI_Timeout_cnt++;
+		if((APP_UI_Timeout_cnt == APP_UI_Timeout))
 		{
-			if((g_clock[1] == p_sys_cfg_sv->time_open_minute) && (g_clock[0] == p_sys_cfg_sv->time_open_hour))
-			{
-				put_event_task_menu(EV_TIME_OPEN);
-			}
-			if((g_clock[1] == p_sys_cfg_sv->time_close_minute) && (g_clock[0] == p_sys_cfg_sv->time_close_hour))
-			{
-				put_event_task_menu(EV_TIME_CLOSE);
-			}
-		}
-		else if((p_sys_cfg_sv->mode == LIGHT) && app_sleep)
-		{
-			static uint8_t open_cnt = 0;
-			static uint8_t close_cnt = 0;
-			static uint32_t ldr_dta = 0;
-			static const uint8_t cnt_size = 3;
-
-			LDR_Request(&hadc1);
-			LDR_Update(&hadc1);
-			while(!LDR_Is_Data_Ready());
-			LDR_Update(&hadc1);
-			ldr_dta = LDR_Get_Average_Value();
-
-			switch(p_sys_cfg_sv->light_open)
-			{
-				case LOW:
-					if(ldr_dta > OPEN_SENSITIVITY_L) open_cnt++;
-					break;
-
-				case MED:
-					if(ldr_dta > OPEN_SENSITIVITY_M) open_cnt++;
-					break;
-
-				case HIGH:
-					if(ldr_dta > OPEN_SENSITIVITY_H) open_cnt++;
-					break;
-			}
-			switch(p_sys_cfg_sv->light_close)
-			{
-				case LOW:
-					if(ldr_dta < CLOSE_SENSITIVITY_L) close_cnt++;
-					break;
-
-				case MED:
-					if(ldr_dta < CLOSE_SENSITIVITY_M) close_cnt++;
-					break;
-
-				case HIGH:
-					if(ldr_dta < CLOSE_SENSITIVITY_H) close_cnt++;
-					break;
-			}
-
-			if((close_cnt != 0) && (open_cnt != 0))
-			{
-				open_cnt = 0;
-				close_cnt = 0;
-			}
-			else if(close_cnt >= cnt_size)
-			{
-				put_event_task_menu(EV_LDR_LOW);
-			}
-			else if(open_cnt >= cnt_size)
-			{
-				put_event_task_menu(EV_LDR_ACTIVATED);
-			}
+			put_event_task_menu(EV_UI_TIMEOUT);
 		}
 	}
 
-	if(app_sleep) HAL_PWR_DisableSleepOnExit();
-	else APP_UI_Timeout_cnt++;
-	if((APP_UI_Timeout_cnt == APP_UI_Timeout) && (!app_sleep))
+	if((cnt_sec%60) == 0)
 	{
-		put_event_task_menu(EV_UI_TIMEOUT);
+		/* Clock Update */
+		if(g_clock[1] < 59) g_clock[1]++;
+		else if(g_clock[0] < 23)
+		{
+			g_clock[1] = 0;
+			g_clock[0]++;
+		}
+		else
+		{
+			g_clock[1] = 0;
+			g_clock[0] = 0;
+		}
+
+		/* Open/Close check */
+		if(app_cfg_cplt)
+		{
+			if(p_sys_cfg_sv->mode == TIME)
+			{
+				if((g_clock[1] == p_sys_cfg_sv->time_open_minute) && (g_clock[0] == p_sys_cfg_sv->time_open_hour))
+				{
+					put_event_task_menu(EV_TIME_OPEN);
+				}
+				if((g_clock[1] == p_sys_cfg_sv->time_close_minute) && (g_clock[0] == p_sys_cfg_sv->time_close_hour))
+				{
+					put_event_task_menu(EV_TIME_CLOSE);
+				}
+			}
+			else if((p_sys_cfg_sv->mode == LIGHT) && app_sleep)
+			{
+				static uint8_t open_cnt = 0;
+				static uint8_t close_cnt = 0;
+				static uint32_t ldr_dta = 0;
+				static const uint8_t cnt_size = 3;
+
+				LDR_Request(&hadc1);
+				LDR_Update(&hadc1);
+				while(!LDR_Is_Data_Ready());
+				LDR_Update(&hadc1);
+				ldr_dta = LDR_Get_Average_Value();
+
+				switch(p_sys_cfg_sv->light_open)
+				{
+					case LOW:
+						if(ldr_dta > OPEN_SENSITIVITY_L) open_cnt++;
+						break;
+
+					case MED:
+						if(ldr_dta > OPEN_SENSITIVITY_M) open_cnt++;
+						break;
+
+					case HIGH:
+						if(ldr_dta > OPEN_SENSITIVITY_H) open_cnt++;
+						break;
+				}
+				switch(p_sys_cfg_sv->light_close)
+				{
+					case LOW:
+						if(ldr_dta < CLOSE_SENSITIVITY_L) close_cnt++;
+						break;
+
+					case MED:
+						if(ldr_dta < CLOSE_SENSITIVITY_M) close_cnt++;
+						break;
+
+					case HIGH:
+						if(ldr_dta < CLOSE_SENSITIVITY_H) close_cnt++;
+						break;
+				}
+
+				if((close_cnt != 0) && (open_cnt != 0))
+				{
+					open_cnt = 0;
+					close_cnt = 0;
+				}
+				else if(close_cnt >= cnt_size)
+				{
+					put_event_task_menu(EV_LDR_LOW);
+				}
+				else if(open_cnt >= cnt_size)
+				{
+					put_event_task_menu(EV_LDR_ACTIVATED);
+				}
+			}
+		}
+
+		if(app_sleep) HAL_PWR_DisableSleepOnExit();
+		put_event_task_menu(EV_TIM_1_MIN);
 	}
-	put_event_task_menu(EV_TIM_1_MIN);
+
+	cycle_counter_time_us = cycle_counter_time_us();
+	if (WCET_clock < cycle_counter_time_us)
+	{
+		WCET_clock = cycle_counter_time_us;
+	}
 }
 /********************** internal functions definition ************************/
 
