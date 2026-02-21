@@ -28,7 +28,7 @@ extern sys_cfg_save_t sys_cfg;
 /********************** external functions declaration ***********************/
 extern void task_eeprom_init(void *parameters);
 extern void task_eeprom_update(void *parameters);
-bool eeprom_check_and_load(task_eeprom_id_t identifier, sys_cfg_opening_t *p_data_op, sys_cfg_save_t *p_data_sv);
+extern bool eeprom_check_and_load(task_eeprom_id_t identifier, sys_cfg_opening_t *p_data_op, sys_cfg_save_t *p_data_sv);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

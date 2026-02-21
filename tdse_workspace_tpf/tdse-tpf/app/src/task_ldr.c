@@ -10,6 +10,7 @@
 #include "task_ldr_attribute.h"
 #include "task_menu_attribute.h"
 #include "task_menu_interface.h"
+#include "task_eeprom.h"
 
 /* Application includes. */
 
@@ -38,14 +39,12 @@ const task_ldr_cfg_t task_ldr_cfg_list[] = {
 #define LDR_CFG_QTY	(sizeof(task_ldr_cfg_list)/sizeof(task_ldr_cfg_t))
 
 task_ldr_dta_t task_ldr_dta_list[] = {
-	{COUNTER_INIT, OPEN_SENSITIVITY_M, CLOSE_SENSITIVITY_M, 0, ST_LDR_XX_RISING, EV_LDR_XX_THRESH_MID},
+	{COUNTER_INIT, 0, ST_LDR_XX_RISING, EV_LDR_XX_THRESH_MID, &sys_cfg},
 };
 
 #define LDR_DTA_QTY	(sizeof(task_ldr_dta_list)/sizeof(task_ldr_dta_t))
 
 static volatile bool b_measuring = false;
-static task_light_id_t aux_open_sstv = MED;
-static task_light_id_t aux_close_sstv = MED;
 
 /********************** internal data definition *****************************/
 
@@ -126,58 +125,16 @@ void task_ldr_update(void *parameters)
 			p_task_ldr_cfg = &task_ldr_cfg_list[index];
 			p_task_ldr_dta = &task_ldr_dta_list[index];
 
-			if(aux_close_sstv != p_sys_cfg_sv->light_close)
-			{
-				aux_close_sstv = p_sys_cfg_sv->light_close;
-
-				switch(p_sys_cfg_sv->light_close)
-				{
-					case LOW:
-						p_task_ldr_dta->close_sensitivity = CLOSE_SENSITIVITY_L;
-						break;
-
-					case MED:
-						p_task_ldr_dta->close_sensitivity = CLOSE_SENSITIVITY_M;
-						break;
-
-					case HIGH:
-						p_task_ldr_dta->close_sensitivity = CLOSE_SENSITIVITY_H;
-						break;
-				}
-			}
-
-			if(aux_open_sstv != p_sys_cfg_sv->light_open)
-			{
-				aux_open_sstv = p_sys_cfg_sv->light_open;
-
-				switch(p_sys_cfg_sv->light_open)
-				{
-					case LOW:
-						p_task_ldr_dta->open_sensitivity = OPEN_SENSITIVITY_L;
-						break;
-
-					case MED:
-						p_task_ldr_dta->open_sensitivity = OPEN_SENSITIVITY_M;
-						break;
-
-					case HIGH:
-						p_task_ldr_dta->open_sensitivity = OPEN_SENSITIVITY_H;
-						break;
-				}
-			}
-
 			LDR_Update(p_task_ldr_cfg->hadc);
 
 			if(LDR_Is_Data_Ready()){
 				b_measuring = false;
 				uint16_t ldr_val = LDR_Get_Average_Value();
 
-				//LOGGER_LOG("LDR Promediado: %u\n", ldr_val);
-
-				if(ldr_val > p_task_ldr_dta->open_sensitivity){
+				if(ldr_val > p_task_ldr_dta->sys_cfg->light_open){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_UPPER;
 				}
-				else if(ldr_val < p_task_ldr_dta->close_sensitivity){
+				else if(ldr_val < p_task_ldr_dta->sys_cfg->light_close){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_LOWER;
 				}
 				else p_task_ldr_dta->event = EV_LDR_XX_THRESH_MID;
@@ -199,7 +156,7 @@ void task_ldr_update(void *parameters)
 						p_task_ldr_dta->accumulated+=ldr_val;
 						if (COUNTER_MIN == p_task_ldr_dta->counter) {
 							if (EV_LDR_XX_THRESH_LOWER == p_task_ldr_dta->event &&
-								p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max <= p_task_ldr_dta->close_sensitivity) {
+								p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max <= p_task_ldr_dta->sys_cfg->light_close) {
 								put_event_task_menu(p_task_ldr_cfg->signal_low);
 								p_task_ldr_dta->state = ST_LDR_XX_HIDDEN;
 							}
@@ -225,7 +182,7 @@ void task_ldr_update(void *parameters)
 						p_task_ldr_dta->counter--;
 						p_task_ldr_dta->accumulated+=ldr_val;
 						if (COUNTER_MIN == p_task_ldr_dta->counter) {
-							if (EV_LDR_XX_THRESH_UPPER == p_task_ldr_dta->event && p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max >= p_task_ldr_dta->open_sensitivity) {
+							if (EV_LDR_XX_THRESH_UPPER == p_task_ldr_dta->event && p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max >= p_task_ldr_dta->sys_cfg->light_open) {
 								put_event_task_menu(p_task_ldr_cfg->signal_up);
 								p_task_ldr_dta->state = ST_LDR_XX_ON;
 								p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
@@ -251,7 +208,7 @@ void task_ldr_update(void *parameters)
 			//Si no se está midiendo empezar
 			if (!b_measuring) {
 				b_measuring = true;
-				LDR_Request();
+				LDR_Request(p_task_ldr_cfg->hadc);
 
 			}
 		}

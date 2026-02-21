@@ -8,6 +8,8 @@ extern "C" {
 
 /********************** inclusions *******************************************/
 
+#include "system_cfg_attribute.h"
+
 /********************** macros ***********************************************/
 //Open/Close Sensitivity
 #define OPEN_SENSITIVITY_L 1200ul
@@ -40,12 +42,11 @@ typedef struct {
 } task_ldr_cfg_t;
 
 typedef struct {
-	uint32_t		counter;
-	uint32_t		open_sensitivity;
-	uint32_t		close_sensitivity;
-	uint32_t		accumulated;
-	task_ldr_st_t	state;
-	task_ldr_ev_t	event;
+	uint32_t		   counter;
+	uint32_t		   accumulated;
+	task_ldr_st_t	   state;
+	task_ldr_ev_t	   event;
+	sys_cfg_save_t    *sys_cfg;
 } task_ldr_dta_t;
 
 /********************** external data declaration ****************************/

@@ -6,11 +6,10 @@
 #include "task_clock.h"
 #include "task_menu_attribute.h"
 #include "task_menu_interface.h"
-#include "task_ldr_attribute.h"
 #include "task_ldr.h"
+#include "task_ldr_attribute.h"
 #include "ldr.h"
-//#include "app.h"
-//#include "board.h"
+#include "task_eeprom.h"
 
 /********************** macros and definitions *******************************/
 
@@ -21,6 +20,8 @@ static uint8_t APP_UI_Timeout_cnt;
 /********************** internal functions declaration ***********************/
 
 /********************** internal data definition *****************************/
+
+sys_cfg_save_t *p_sys_cfg_sv = &sys_cfg;
 
 /********************** external data declaration ****************************/
 volatile uint8_t g_clock[2];
@@ -93,7 +94,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			static uint32_t ldr_dta = 0;
 			static const uint8_t cnt_size = 3;
 
-			LDR_Request();
+			LDR_Request(&hadc1);
 			LDR_Update(&hadc1);
 			while(!LDR_Is_Data_Ready());
 			LDR_Update(&hadc1);

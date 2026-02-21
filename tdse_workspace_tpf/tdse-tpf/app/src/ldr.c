@@ -26,13 +26,13 @@ static volatile uint16_t ldr_average = 0;
 /********************** external data declaration *****************************/
 
 /********************** external functions definition ************************/
-void LDR_Request(void) {
+void LDR_Request(ADC_HandleTypeDef *hadc) {
 	if(b_reading) return;
 	sample_idx = 0;
 	b_reading = true;
 	b_data_ready = false;
 
-	HAL_ADC_Start_IT(&hadc1);
+	HAL_ADC_Start_IT(hadc);
 }
 
 void LDR_Update(ADC_HandleTypeDef *hadc) {

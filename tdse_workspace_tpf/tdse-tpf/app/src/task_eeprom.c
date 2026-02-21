@@ -410,7 +410,7 @@ static void find_latest_slot(task_eeprom_dta_t *dta, sys_cfg_save_t *p_data_sv) 
         }
     }
     dta->current_id = read_id(dta->current_slot_id);
-    read_eeprom_blocking(calc_cyclic_addr(dta->current_slot_id), (uint8_t*)&p_data_sv, sizeof(sys_cfg_save_t));
+    read_eeprom_blocking(calc_cyclic_addr(dta->current_slot_id), (uint8_t*)p_data_sv, sizeof(sys_cfg_save_t));
 }
 
 /********************** end of file ******************************************/

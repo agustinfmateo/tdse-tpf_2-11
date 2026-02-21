@@ -15,7 +15,7 @@ extern "C" {
 /********************** external data declaration ****************************/
 
 /********************** external functions declaration ***********************/
-void LDR_Request(void);
+void LDR_Request(ADC_HandleTypeDef *hadc);
 void LDR_Update(ADC_HandleTypeDef *hadc);
 bool LDR_Is_Data_Ready(void);
 uint16_t LDR_Get_Average_Value(void);
