@@ -80,6 +80,8 @@ const char *p_task_actuator_ 		= "Non-Blocking & Update By Time Code";
 uint32_t g_task_actuator_cnt;
 volatile uint32_t g_task_actuator_tick_cnt;
 
+const task_actuator_cfg_t *p_actuator = &task_actuator_cfg_list[ID_BINDS];
+
 /********************** external functions definition ************************/
 void task_actuator_init(void *parameters)
 {

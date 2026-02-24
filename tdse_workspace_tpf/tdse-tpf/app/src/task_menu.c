@@ -79,12 +79,16 @@ typedef enum aux_clock_id {CLOCK,
 					   TIME_OPEN,
 					   TIME_CLOSE} aux_clock_id_t;
 
-aux_clock_id_t clock_id;
+static aux_clock_id_t clock_id;
 
 static bool mem_empty;
 static uint8_t clk_array[4] = {0, 0, 0, 0};
 static bool help;
-uint32_t aux_timer = 0;
+static uint32_t aux_timer = 0;
+static uint32_t aux_tick;
+static bool aux_spin;
+static task_light_id_t aux_light_id;
+
 
 /********************** external data declaration ****************************/
 uint32_t g_task_menu_cnt;
@@ -226,7 +230,7 @@ void task_menu_update(void *parameters)
 		}
 		else
 		{
-			p_task_menu_dta->tick = DEL_MEN_XX_MAX;
+			p_task_menu_dta->tick = DEL_MEN_XX_MIN;
 
 			if (true == any_event_task_menu())
 			{
@@ -252,12 +256,15 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
 
-						//put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						//p_sys_cfg_dta->sys_cfg_op->SpinRight = true;
 						//Si pongo SpinRight = true  se va a volver a abrir
+						//aux_spin va a guardar el sentido de giro de apertura
+						aux_spin = true;
 
 						clock_UI_Timeout_reset();
 
+						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -265,11 +272,12 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
 
-						p_sys_cfg_dta->sys_cfg_op->SpinRight = false;
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						aux_spin = false;
 
 						clock_UI_Timeout_reset();
 
+						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -281,6 +289,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_OPENING_2_SPEED:
@@ -292,7 +301,7 @@ void task_menu_update(void *parameters)
 						break;
 					}
 
-					if(aux_timer != 0)//esperar hasta que se abra
+					if(aux_timer != 0)//esperar hasta que se cierra
 					{
 						if((HAL_GetTick() - aux_timer) > (p_sys_cfg_dta->sys_cfg_op->TimeOpening))
 						{
@@ -321,6 +330,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						clock_UI_Timeout_reset();
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = !aux_spin;
 						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						aux_timer = HAL_GetTick();
 					}
@@ -334,9 +344,25 @@ void task_menu_update(void *parameters)
 						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_OPENING_3_TIME_CLOSE:
+
+					if(aux_timer != 0)//esperar hasta que se abra
+					{
+						if((HAL_GetTick() - aux_timer) > (1.2*p_sys_cfg_dta->sys_cfg_op->TimeOpening))
+						{
+							clock_UI_Timeout_reset();
+							displayCharPositionWrite(0, 0);
+							displayStringWrite("Presione 'Next' ");
+							displayCharPositionWrite(0, 1);
+							displayStringWrite("para comenzar   ");
+							aux_timer = 0;
+						}
+						p_task_menu_dta->flag = false;
+						break;
+					}
 
 					if(help)
 					{
@@ -353,13 +379,14 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_OPENING_4_TIME_PROBE;
 
 						aux_timer = HAL_GetTick();
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = !aux_spin;
+						//Habría que usar esta función directamente ya que el tiempo
+						//de apertura no lo sabemos
+						motorMove(p_actuator);
 						clock_UI_Timeout_reset();
 
 						displayCharPositionWrite(0, 1);
 						displayStringWrite("para terminar   ");
-						//Habría que usar esta función directamente ya que el tiempo
-						//de apertura no lo sabemos
-						//motorMove(const task_actuator_cfg_t *actuator);
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -370,6 +397,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_OPENING_4_TIME_PROBE:
@@ -380,7 +408,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_5_TIME_OK;
 
-						//motorStop(const task_actuator_cfg_t *actuator);
+						motorStop(p_actuator);
 						p_sys_cfg_dta->sys_cfg_op->TimeOpening = HAL_GetTick() - aux_timer;
 
 						aux_timer = HAL_GetTick();
@@ -393,15 +421,24 @@ void task_menu_update(void *parameters)
 						//HAL_Delay(1000)
 						//op_open_blinds
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_OPENING_5_TIME_OK:
 
 					if(aux_timer != 0)
 					{
-						if((HAL_GetTick() - aux_timer) > (p_sys_cfg_dta->sys_cfg_op->TimeOpening))
+						if((HAL_GetTick() - aux_timer) > (1.2*p_sys_cfg_dta->sys_cfg_op->TimeOpening))
 						{
-							aux_timer = 0;
+							if(p_sys_cfg_dta->sys_cfg_op->SpinRight != aux_spin)
+							{
+								//cierro para probar el tiempo de apertura y para
+								//hacer que p_sys_cfg_dta->sys_cfg_op->SpinRight == aux_spin
+								//y así poder guardar el sentido de apertura y no el de cierre
+								put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+								aux_timer = HAL_GetTick();
+							}
+							else aux_timer = 0;
 						}
 						p_task_menu_dta->flag = false;
 						break;
@@ -422,8 +459,6 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
 						put_event_task_eeprom(EV_EEPROM_SAVE_OPENING, ID_EEPROM);
-						//op_set_opening_time
-						//reset_clock
 
 						p_sys_cfg_dta->sys_cfg_save->mode = MANUAL;
 						p_sys_cfg_dta->sys_cfg_save->light_close = LOW;
@@ -454,10 +489,14 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 						displayCharPositionWrite(0, 0);
-						displayStringWrite("Presione 'Next' ");
+						displayStringWrite("    Espere...   ");
 						displayCharPositionWrite(0, 1);
-						displayStringWrite("para comenzar   ");
+						displayStringWrite("                ");
+
+						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						aux_timer = HAL_GetTick();
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_CLOCK_1:
@@ -483,7 +522,7 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
 
 							displayCharPositionWrite(0, 0);
-							displayStringWrite("   Terminar?    ");
+							displayStringWrite(" Guardar conf.? ");
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("  NO        SI  ");
 						}
@@ -595,11 +634,7 @@ void task_menu_update(void *parameters)
 							task_display_menu_1();
 						}
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_OPEN_1:
@@ -625,7 +660,7 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
 
 							displayCharPositionWrite(0, 0);
-							displayStringWrite("  Guardar confi.?");
+							displayStringWrite(" Guardar conf.? ");
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("  NO        SI  ");
 						}
@@ -734,17 +769,11 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
 							task_display_menu_1();
-
 							clock_UI_Timeout_reset();
 						}
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_CLOSE_1:
@@ -770,14 +799,13 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
 
 							displayCharPositionWrite(0, 0);
-							displayStringWrite("  Guardar confi.?");
+							displayStringWrite(" Guardar conf.? ");
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("  NO        SI  ");
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
 							task_display_menu_1();
 						}
 						clock_UI_Timeout_reset();
@@ -876,17 +904,11 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
 							task_display_menu_1();
-
 							clock_UI_Timeout_reset();
 						}
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_XX_21_HOURD:
@@ -1032,11 +1054,7 @@ void task_menu_update(void *parameters)
 						}
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_XX_22_HOURU:
@@ -1185,11 +1203,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_XX_23_MINUTED:
@@ -1338,11 +1352,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_XX_24_MINUTEU:
@@ -1487,11 +1497,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_TIME_XX_25_SAVE:
@@ -1554,7 +1560,9 @@ void task_menu_update(void *parameters)
 						{
 							p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
-							//op_set_clock
+							g_clock[0] = clk_array[0]*10 + clk_array[1];
+							g_clock[1] = clk_array[2]*10 + clk_array[3];
+
 							displayCharPositionWrite(0, 0);
 							displayStringWrite("   Configurar   ");
 							displayCharPositionWrite(0, 1);
@@ -1564,7 +1572,10 @@ void task_menu_update(void *parameters)
 						{
 							p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
 
-							//op_set_time_open
+							p_sys_cfg_dta->sys_cfg_save->time_open_hour = clk_array[0]*10 + clk_array[1];
+							p_sys_cfg_dta->sys_cfg_save->time_open_minute = clk_array[2]*10 + clk_array[3];
+							put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
 							displayCharPositionWrite(0, 0);
 							displayStringWrite("Configurar hora ");
 							displayCharPositionWrite(0, 1);
@@ -1574,7 +1585,10 @@ void task_menu_update(void *parameters)
 						{
 							p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
 
-							//op_set_time_close
+							p_sys_cfg_dta->sys_cfg_save->time_close_hour = clk_array[0]*10 + clk_array[1];
+							p_sys_cfg_dta->sys_cfg_save->time_close_minute = clk_array[2]*10 + clk_array[3];
+							put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
 							displayCharPositionWrite(0, 0);
 							displayStringWrite("Configurar hora ");
 							displayCharPositionWrite(0, 1);
@@ -1663,11 +1677,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_LIGHT_OPEN_1:
@@ -1693,7 +1703,7 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
 
 							displayCharPositionWrite(0, 0);
-							displayStringWrite("  Guardar conf.? ");
+							displayStringWrite(" Guardar conf.? ");
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("  NO        SI  ");
 						}
@@ -1798,11 +1808,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_LIGHT_OPEN_2_SEL:
@@ -1813,7 +1819,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_open = MED;
+						aux_light_id = MED;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -1826,7 +1832,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_open = LOW;
+						aux_light_id = LOW;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -1839,7 +1845,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_open = HIGH;
+						aux_light_id = HIGH;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -1922,23 +1928,12 @@ void task_menu_update(void *parameters)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
-							//sprintf(menu_str,"%s", get_clock_string())
-							//get_clock(clk_array)
-							task_display_refresh();
-							sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-							displayCharPositionWrite(0, 0);
-							displayStringWrite(menu_str);
-							displayCharPositionWrite(0, 1);
-							displayStringWrite("    -Conf.- Sel.");
+							task_display_menu_1();
 						}
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_LIGHT_OPEN_3_SAVE:
@@ -1961,7 +1956,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_1;
 
-						//op_set_open_light
+						p_sys_cfg_dta->sys_cfg_save->light_open = aux_light_id;
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("Conf. luminusi- ");
 						displayCharPositionWrite(0, 1);
@@ -2049,11 +2046,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_LIGHT_CLOSE_1:
@@ -2079,7 +2072,7 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
 
 							displayCharPositionWrite(0, 0);
-							displayStringWrite("  Guardar confi.?");
+							displayStringWrite(" Guardar conf.? ");
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("  NO        SI  ");
 						}
@@ -2179,23 +2172,12 @@ void task_menu_update(void *parameters)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
-							//sprintf(menu_str,"%s", get_clock_string())
-							//get_clock(clk_array)
-							task_display_refresh();
-							sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-							displayCharPositionWrite(0, 0);
-							displayStringWrite(menu_str);
-							displayCharPositionWrite(0, 1);
-							displayStringWrite("    -Conf.- Sel.");
+							task_display_menu_1();
 						}
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_LIGHT_CLOSE_2_SEL:
@@ -2206,7 +2188,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_close = MED;
+						aux_light_id = MED;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -2219,7 +2201,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_close = LOW;
+						aux_light_id = LOW;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -2232,7 +2214,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
-						p_sys_cfg_dta->sys_cfg_save->light_close = HIGH;
+						aux_light_id = HIGH;
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("     Seguro?     ");
 						displayCharPositionWrite(0, 1);
@@ -2320,11 +2302,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 
@@ -2348,7 +2326,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_1;
 
-						//op_set_open_light
+						p_sys_cfg_dta->sys_cfg_save->light_close = aux_light_id;
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("Conf. luminusi- ");
 						displayCharPositionWrite(0, 1);
@@ -2436,11 +2416,7 @@ void task_menu_update(void *parameters)
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_SAVE_CONF:
@@ -2463,19 +2439,40 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
-						//op_save_cfg
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						p_sys_cfg_dta->open = true;
+						app_cfg_cplt = true;
+
 						task_display_menu_1();
 
 						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_CHECK_1_OPENCLOSE:
+					if(aux_timer != 0)//esperar hasta que se abra
+					{
+						if((HAL_GetTick() - aux_timer) >= aux_tick)
+						{
+							aux_timer = 0;
+							motorStop(p_actuator);
+
+							displayCharPositionWrite(0, 0);
+							displayStringWrite("   Esta abierta? ");
+							displayCharPositionWrite(0, 1);
+							displayStringWrite("NO -A medias- SI");
+						}
+						p_task_menu_dta->flag = false;
+						break;
+					}
+					if(help)
+					{
+						task_display_menu_help(p_task_menu_dta->state);
+						p_task_menu_dta->flag = false;
+						break;
+					}
 					if(!p_task_menu_dta->flag) break;
 
 					if(EV_BTN_NEXT_DOWN == p_task_menu_dta->event)
@@ -2483,7 +2480,10 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CHECK_2_CLOSEALL;
 
-						//op_close_blind
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = !p_sys_cfg_dta->sys_cfg_op->SpinRight;
+						aux_timer = HAL_GetTick();
+						motorMove(p_actuator);
+
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("Presione 'Next' ");
 						displayCharPositionWrite(0, 1);
@@ -2497,7 +2497,12 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
 						p_sys_cfg_dta->open = false;
-						task_display_menu_1();
+						app_cfg_cplt = true;
+
+						displayCharPositionWrite(0, 0);
+						displayStringWrite("   Configurar   ");
+						displayCharPositionWrite(0, 1);
+						displayStringWrite("      reloj     ");
 
 						clock_UI_Timeout_reset();
 					}
@@ -2507,7 +2512,12 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
 						p_sys_cfg_dta->open = true;
-						task_display_menu_1();
+						app_cfg_cplt = true;
+
+						displayCharPositionWrite(0, 0);
+						displayStringWrite("   Configurar   ");
+						displayCharPositionWrite(0, 1);
+						displayStringWrite("      reloj     ");
 
 						clock_UI_Timeout_reset();
 					}
@@ -2515,15 +2525,12 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 
+						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
-
-						displayCharPositionWrite(0, 0);
-						displayStringWrite("   Esta abierta? ");
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("NO -A medias- SI");
 
 						clock_UI_Timeout_reset();
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_CHECK_2_CLOSEALL:
@@ -2534,12 +2541,16 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CHECK_3_OK;
 
-						//op_stop_motor
+						motorStop(p_actuator);
+						aux_tick = HAL_GetTick() - aux_timer;
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = !p_sys_cfg_dta->sys_cfg_op->SpinRight;
+
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("    Cerro bien?  ");
 						displayCharPositionWrite(0, 1);
 						displayStringWrite(" No          Si ");
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_SET_UP_CHECK_3_OK:
@@ -2550,7 +2561,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
-						//reset_clock
+						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						p_sys_cfg_dta->open = true;
+						app_cfg_cplt = true;
 
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("   Configurar   ");
@@ -2562,16 +2575,19 @@ void task_menu_update(void *parameters)
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						p_task_menu_dta->state = ST_SET_UP_CHECK_3_OK;
+						p_task_menu_dta->state = ST_SET_UP_CHECK_1_OPENCLOSE;
 
-						//op_open_blinds
+						aux_timer = HAL_GetTick();
+						motorMove(p_actuator);
+
 						displayCharPositionWrite(0, 0);
-						displayStringWrite("   Esta abierta? ");
+						displayStringWrite("   Espere...    ");
 						displayCharPositionWrite(0, 1);
-						displayStringWrite("NO -A medias- SI");
+						displayStringWrite("                ");
 
 						clock_UI_Timeout_reset();
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_MENU_1:
@@ -2684,6 +2700,12 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						task_display_menu_1();
+						if((sys_cfg_dta->sys_cfg_save->mode == MANUAL) && app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					break;
 

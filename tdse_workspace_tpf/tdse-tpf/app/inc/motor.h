@@ -28,6 +28,7 @@ extern "C" {
 
 /********************** external data declaration ****************************/
 extern TIM_HandleTypeDef htim3;
+extern const task_actuator_cfg_t *p_actuator;
 
 /********************** external functions declaration ***********************/
 

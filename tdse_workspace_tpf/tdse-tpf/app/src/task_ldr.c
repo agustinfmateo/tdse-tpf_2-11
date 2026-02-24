@@ -11,6 +11,7 @@
 #include "task_menu_attribute.h"
 #include "task_menu_interface.h"
 #include "task_eeprom.h"
+#include "system_cfg_attribute.h"
 
 /* Application includes. */
 
@@ -45,6 +46,17 @@ task_ldr_dta_t task_ldr_dta_list[] = {
 #define LDR_DTA_QTY	(sizeof(task_ldr_dta_list)/sizeof(task_ldr_dta_t))
 
 static volatile bool b_measuring = false;
+
+const uint32_t list_sstv_open[] = {
+		[LOW] = OPEN_SENSITIVITY_L,
+		[MED] = OPEN_SENSITIVITY_M,
+		[HIGH] = OPEN_SENSITIVITY_H
+};
+const uint32_t list_sstv_close[] = {
+		[LOW] = CLOSE_SENSITIVITY_L,
+		[MED] = CLOSE_SENSITIVITY_M,
+		[HIGH] = CLOSE_SENSITIVITY_H
+};
 
 /********************** internal data definition *****************************/
 
@@ -102,7 +114,7 @@ void task_ldr_update(void *parameters)
     }
     __asm("CPSIE i");	/* enable interrupts*/
 
-    b_time_update_required = true;
+    //b_time_update_required = true;
 
     while (b_time_update_required)
     {
@@ -121,6 +133,8 @@ void task_ldr_update(void *parameters)
 
     	for (index = 0; LDR_DTA_QTY > index; index++)
 		{
+    		if(!app_cfg_cplt) break;
+
     		/* Update Task Sensor Configuration & Data Pointer */
 			p_task_ldr_cfg = &task_ldr_cfg_list[index];
 			p_task_ldr_dta = &task_ldr_dta_list[index];
@@ -131,10 +145,10 @@ void task_ldr_update(void *parameters)
 				b_measuring = false;
 				uint16_t ldr_val = LDR_Get_Average_Value();
 
-				if(ldr_val > p_task_ldr_dta->sys_cfg->light_open){
+				if(ldr_val > list_sstv_open[p_task_ldr_dta->sys_cfg->light_open]){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_UPPER;
 				}
-				else if(ldr_val < p_task_ldr_dta->sys_cfg->light_close){
+				else if(ldr_val < list_sstv_close[p_task_ldr_dta->sys_cfg->light_close]){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_LOWER;
 				}
 				else p_task_ldr_dta->event = EV_LDR_XX_THRESH_MID;
@@ -156,7 +170,7 @@ void task_ldr_update(void *parameters)
 						p_task_ldr_dta->accumulated+=ldr_val;
 						if (COUNTER_MIN == p_task_ldr_dta->counter) {
 							if (EV_LDR_XX_THRESH_LOWER == p_task_ldr_dta->event &&
-								p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max <= p_task_ldr_dta->sys_cfg->light_close) {
+								p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max <= list_sstv_close[p_task_ldr_dta->sys_cfg->light_close]) {
 								put_event_task_menu(p_task_ldr_cfg->signal_low);
 								p_task_ldr_dta->state = ST_LDR_XX_HIDDEN;
 							}
@@ -182,7 +196,7 @@ void task_ldr_update(void *parameters)
 						p_task_ldr_dta->counter--;
 						p_task_ldr_dta->accumulated+=ldr_val;
 						if (COUNTER_MIN == p_task_ldr_dta->counter) {
-							if (EV_LDR_XX_THRESH_UPPER == p_task_ldr_dta->event && p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max >= p_task_ldr_dta->sys_cfg->light_open) {
+							if (EV_LDR_XX_THRESH_UPPER == p_task_ldr_dta->event && p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max >= list_sstv_open[p_task_ldr_dta->sys_cfg->light_open]) {
 								put_event_task_menu(p_task_ldr_cfg->signal_up);
 								p_task_ldr_dta->state = ST_LDR_XX_ON;
 								p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;

@@ -46,6 +46,7 @@ void clock_init(void)
     __asm("CPSIE i");	/* enable interrupts*/
 
     app_sleep = false;
+    app_cfg_cplt = false;
 
 	if(HAL_TIM_Base_Start_IT(APP_CLK_TIM) != HAL_OK)
 	{
