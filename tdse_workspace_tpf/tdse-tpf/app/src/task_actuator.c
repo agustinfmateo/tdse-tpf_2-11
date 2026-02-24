@@ -51,6 +51,7 @@
 #include "task_menu_attribute.h"
 #include "task_eeprom.h"
 #include "task_eeprom_attribute.h"
+#include "task_clock.h"
 
 /********************** macros and definitions *******************************/
 #define G_TASK_ACT_CNT_INIT			0ul
@@ -190,6 +191,12 @@ void task_actuator_update(void *parameters)
 						p_task_actuator_cfg->sys_cfg_op->SpinRight = !p_task_actuator_cfg->sys_cfg_op->SpinRight;
 						if(p_task_actuator_dta->event == EV_BINDS_XX_OPEN){
 							p_task_actuator_dta->state = ST_BINDS_XX_OPEN;
+							if(app_sleep)
+							{
+								HAL_SuspendTick();
+								HAL_PWR_EnableSleepOnExit();
+								HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+							}
 						}
 						else{
 							p_task_actuator_dta->state = ST_BINDS_XX_CLOSING;
@@ -207,6 +214,12 @@ void task_actuator_update(void *parameters)
 						p_task_actuator_cfg->sys_cfg_op->SpinRight = !p_task_actuator_cfg->sys_cfg_op->SpinRight;
 						if(p_task_actuator_dta->event == EV_BINDS_XX_CLOSE){
 							p_task_actuator_dta->state = ST_BINDS_XX_CLOSE;
+							if(app_sleep)
+							{
+								HAL_SuspendTick();
+								HAL_PWR_EnableSleepOnExit();
+								HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+							}
 						}
 						else{
 							p_task_actuator_dta->state = ST_BINDS_XX_OPENING;

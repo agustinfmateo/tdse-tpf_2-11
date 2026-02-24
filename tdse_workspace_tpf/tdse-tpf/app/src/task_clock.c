@@ -95,6 +95,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			g_clock[1] = 0;
 			g_clock[0] = 0;
 		}
+		put_event_task_menu(EV_TIM_1_MIN);
 
 		/* Open/Close check */
 		if(app_cfg_cplt)
@@ -168,8 +169,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			}
 		}
 
-		if(app_sleep) HAL_PWR_DisableSleepOnExit();
-		put_event_task_menu(EV_TIM_1_MIN);
+		if(app_sleep)
+		{
+			HAL_ResumeTick();
+			HAL_PWR_DisableSleepOnExit();
+		}
 	}
 
 	cycle_counter_time_us = cycle_counter_time_us();

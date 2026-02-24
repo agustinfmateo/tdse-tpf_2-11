@@ -28,7 +28,7 @@ void motorStopL298N(const task_actuator_cfg_t *actuator);
 void motorMove(const task_actuator_cfg_t *actuator)
 {
 #if DRIVER_MOTOR==DRIVER1_L9110S
-	motorMove(actuator, spinRight);
+	motorMove(actuator, actuator->sys_cfg_op->SpinRight);
 #endif
 #if DRIVER_MOTOR==DRIVER2_L298N
 	motorMoveL298N(actuator);
@@ -69,19 +69,19 @@ void motorMoveL9110S(const task_actuator_cfg_t *actuator, bool spinRight)
 {
 	if(spinRight)
 	{
-		setPWM(MOTOR_TIM, MOTOR_CHANNEL_RIGHT, *actuator->speed);
+		setPWM(MOTOR_TIM, MOTOR_CHANNEL_RIGHT, actuator->sys_cfg_op->Speed);
 		HAL_TIM_PWM_Start(MOTOR_TIM, MOTOR_CHANNEL_RIGHT);
 	}
 	else
 	{
-		setPWM(MOTOR_TIM, MOTOR_CHANNEL_LEFT, *actuator->speed);
+		setPWM(MOTOR_TIM, MOTOR_CHANNEL_LEFT, actuator->sys_cfg_op->Speed);
 		HAL_TIM_PWM_Start(MOTOR_TIM, MOTOR_CHANNEL_LEFT);
 	}
 }
 
 void motorStopL9110S(const task_actuator_cfg_t *actuator)
 {
-	if(MOTOR_spin_right) HAL_TIM_PWM_Stop(MOTOR_TIM, MOTOR_CHANNEL_RIGHT);
+	if(actuator->sys_cfg_op->SpinRight) HAL_TIM_PWM_Stop(MOTOR_TIM, MOTOR_CHANNEL_RIGHT);
 	else HAL_TIM_PWM_Stop(MOTOR_TIM, MOTOR_CHANNEL_LEFT);
 }
 #endif

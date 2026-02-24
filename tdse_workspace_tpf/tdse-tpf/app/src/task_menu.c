@@ -252,8 +252,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
 
-						p_sys_cfg_dta->sys_cfg_op->SpinRight = true;
-						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+						//put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+						//p_sys_cfg_dta->sys_cfg_op->SpinRight = true;
+						//Si pongo SpinRight = true  se va a volver a abrir
 
 						clock_UI_Timeout_reset();
 
@@ -518,38 +519,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open)//op_close_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
 						{
-							HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open)//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
 						{
-							HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -630,31 +663,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -733,31 +805,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -845,31 +956,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -958,31 +1108,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1071,31 +1260,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1182,31 +1410,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1319,31 +1586,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1415,31 +1721,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1505,31 +1850,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1588,31 +1972,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1684,31 +2107,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1781,31 +2243,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -1858,31 +2359,70 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2065,31 +2605,69 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty);
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(mem_empty) break;
+						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2098,6 +2676,7 @@ void task_menu_update(void *parameters)
 						HAL_NVIC_EnableIRQ(ENTER_EXTI_IRQn);
 						app_sleep = true;
 						clock_UI_Timeout_reset();
+						HAL_SuspendTick();
 						HAL_PWR_EnableSleepOnExit();
 						HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 					}
@@ -2152,27 +2731,66 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2240,27 +2858,66 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2328,27 +2985,66 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2416,27 +3112,66 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2505,27 +3240,66 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
-
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(!p_sys_cfg_dta->open);//op_open_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(!p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+							p_sys_cfg_dta->open = true;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode);
-						else if(p_sys_cfg_dta->open);//op_close_blinds
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						else if(p_sys_cfg_dta->open)
+						{
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+							p_sys_cfg_dta->open = false;
+						}
+						else if(app_sleep)
+						{
+							HAL_SuspendTick();
+							HAL_PWR_EnableSleepOnExit();
+							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+						}
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -2560,21 +3334,31 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if(BTN_ENT_PIN == GPIO_Pin)
 	{
 		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
+		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
+		HAL_ResumeTick();
 		HAL_Delay(75);
 	}
 	else if(BTN_NEX_PIN == GPIO_Pin)
 	{
 		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
+		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
+		HAL_ResumeTick();
 		HAL_Delay(75);
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
+		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
+		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
+		app_sleep = false;
+		clock_UI_Timeout_reset();
+		HAL_PWR_DisableSleepOnExit();
+		HAL_ResumeTick();
 		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
 	}
 
