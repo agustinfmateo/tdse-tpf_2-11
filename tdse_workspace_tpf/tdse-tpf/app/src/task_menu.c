@@ -53,6 +53,7 @@
 #include "task_eeprom_interface.h"
 #include "task_eeprom.h"
 #include "display.h"
+#include "motor.h"
 
 /********************** macros and definitions *******************************/
 #define G_TASK_MEN_CNT_INI			0ul
@@ -2697,7 +2698,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						task_display_menu_1();
-						if((sys_cfg_dta->sys_cfg_save->mode == MANUAL) && app_sleep)
+						if((p_sys_cfg_dta->sys_cfg_save->mode == MANUAL) && app_sleep)
 						{
 							HAL_SuspendTick();
 							HAL_PWR_EnableSleepOnExit();

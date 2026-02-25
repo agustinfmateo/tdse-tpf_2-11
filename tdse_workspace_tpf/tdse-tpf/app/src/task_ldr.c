@@ -12,6 +12,7 @@
 #include "task_menu_interface.h"
 #include "task_eeprom.h"
 #include "system_cfg_attribute.h"
+#include "task_clock.h"
 
 /* Application includes. */
 
