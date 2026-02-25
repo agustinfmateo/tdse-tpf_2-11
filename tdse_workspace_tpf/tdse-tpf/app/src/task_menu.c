@@ -2637,8 +2637,7 @@ void task_menu_update(void *parameters)
 					else if(EV_LDR_ACTIVATED == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty) break;
-						else if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						if(LIGHT != p_sys_cfg_dta->sys_cfg_save->mode) break;
 						else if(!p_sys_cfg_dta->open)
 						{
 							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
@@ -2654,8 +2653,7 @@ void task_menu_update(void *parameters)
 					else if(EV_TIME_OPEN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty) break;
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
 						else if(!p_sys_cfg_dta->open)
 						{
 							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
@@ -2671,8 +2669,7 @@ void task_menu_update(void *parameters)
 					else if(EV_TIME_CLOSE == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						if(mem_empty) break;
-						else if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
+						if(TIME != p_sys_cfg_dta->sys_cfg_save->mode) break;
 						else if(p_sys_cfg_dta->open)
 						{
 							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
@@ -2707,6 +2704,7 @@ void task_menu_update(void *parameters)
 							HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 						}
 					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_CFG_MODE_1:
@@ -2716,29 +2714,15 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
@@ -2749,6 +2733,7 @@ void task_menu_update(void *parameters)
 						displayStringWrite("   Configurar   ");
 						displayCharPositionWrite(0, 1);
 						displayStringWrite("      reloj     ");
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
@@ -2818,21 +2803,10 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_MENU_21_OPENCLOSE:
@@ -2847,20 +2821,15 @@ void task_menu_update(void *parameters)
 						displayStringWrite("Selec. modo de  ");
 						displayCharPositionWrite(0, 1);
 						displayStringWrite("apertura manual ");
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
@@ -2869,13 +2838,15 @@ void task_menu_update(void *parameters)
 						if(p_sys_cfg_dta->open)
 						{
 							p_sys_cfg_dta->open = false;
-							//op_close_blinds
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						}
 						else
 						{
 							p_sys_cfg_dta->open = true;
-							//op_open_blinds
+							put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						}
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
@@ -2945,21 +2916,10 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_MENU_22_SEL_MANUAL:
@@ -2974,20 +2934,15 @@ void task_menu_update(void *parameters)
 						displayStringWrite("Selec. modo de  ");
 						displayCharPositionWrite(0, 1);
 						displayStringWrite("apertu. por hora");
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
@@ -2995,14 +2950,10 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
 						p_sys_cfg_dta->sys_cfg_save->mode = MANUAL;
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
@@ -3072,21 +3023,10 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_MENU_23_SEL_TIME:
@@ -3101,20 +3041,15 @@ void task_menu_update(void *parameters)
 						displayStringWrite("Selec. modo de  ");
 						displayCharPositionWrite(0, 1);
 						displayStringWrite("apertura por luz");
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
@@ -3122,14 +3057,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
 						p_sys_cfg_dta->sys_cfg_save->mode = TIME;
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
@@ -3199,21 +3129,10 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
 
 				case ST_NORMAL_MENU_24_SEL_LIGHT:
@@ -3227,21 +3146,15 @@ void task_menu_update(void *parameters)
 						task_display_refresh();
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("  ABRIR/CERRAR  ");
+
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
@@ -3249,15 +3162,9 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
 						p_sys_cfg_dta->sys_cfg_save->mode = LIGHT;
+						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
 
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						clock_UI_Timeout_reset();
 					}
 					else if(EV_LDR_LOW == p_task_menu_dta->event)
 					{
@@ -3327,24 +3234,11 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-
-
-						//sprintf(menu_str,"%s", get_clock_string())
-						//get_clock(clk_array)
-						task_display_refresh();
-						sprintf(menu_str,"     %d%d:%d%d", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
-						displayCharPositionWrite(0, 0);
-						displayStringWrite(menu_str);
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("    -Conf.- Sel.");
+						task_display_menu_1();
+						clock_UI_Timeout_reset();
 					}
-					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
-					{
-						p_task_menu_dta->flag = false;
-						//op_time_1_min
-					}
+					else p_task_menu_dta->flag = false;
 					break;
-
 			}
 		}
 	}
@@ -3383,7 +3277,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		HAL_ResumeTick();
 		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
 	}
-
 }
 
 /********************** internal functions definition ************************/
