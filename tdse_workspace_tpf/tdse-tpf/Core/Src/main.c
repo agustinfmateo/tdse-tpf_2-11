@@ -454,13 +454,13 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : ESCAPE_Pin */
   GPIO_InitStruct.Pin = ESCAPE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(ESCAPE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : NEXT_Pin */
   GPIO_InitStruct.Pin = NEXT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(NEXT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : D9_Pin */
@@ -480,7 +480,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : ENTER_Pin */
   GPIO_InitStruct.Pin = ENTER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(ENTER_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
