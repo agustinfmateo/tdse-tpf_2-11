@@ -181,8 +181,7 @@ void task_menu_init(void *parameters)
 		clock_UI_Timeout_reset();
 	}
 	g_task_menu_tick_cnt = G_TASK_MEN_TICK_CNT_INI;
-	HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
-	HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
+	EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
 }
 
 
@@ -2686,8 +2685,7 @@ void task_menu_update(void *parameters)
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						HAL_NVIC_EnableIRQ(NEXT_EXTI_IRQn);
-						HAL_NVIC_EnableIRQ(ENTER_EXTI_IRQn);
+						EXTI->IMR |= (BTN_NEX_PIN | BTN_ENT_PIN); //Habilita las interrupciones usando máscaras
 						app_sleep = true;
 						clock_UI_Timeout_reset();
 						HAL_SuspendTick();
@@ -3250,33 +3248,40 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(BTN_ENT_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
-		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
+		EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN); //Deshabilita las interrupciones usando
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
 		HAL_ResumeTick();
-		HAL_Delay(75);
 	}
 	else if(BTN_NEX_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
-		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
+		EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
 		app_sleep = false;
 		clock_UI_Timeout_reset();
 		HAL_PWR_DisableSleepOnExit();
 		HAL_ResumeTick();
-		HAL_Delay(75);
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
-		HAL_NVIC_DisableIRQ(ENTER_EXTI_IRQn);
-		HAL_NVIC_DisableIRQ(NEXT_EXTI_IRQn);
-		app_sleep = false;
-		clock_UI_Timeout_reset();
-		HAL_PWR_DisableSleepOnExit();
-		HAL_ResumeTick();
-		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
+		static uint32_t last_triggered = 0;
+
+		if(app_sleep || HAL_GetTick() - last_triggered > 3) { //Debounce
+			last_triggered = HAL_GetTick();
+
+			EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
+			app_sleep = false;
+			clock_UI_Timeout_reset();
+			HAL_PWR_DisableSleepOnExit();
+			HAL_ResumeTick();
+			put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
+
+			displayCharPositionWrite(0, 0);
+			displayStringWrite("    Formateo    ");
+			displayCharPositionWrite(0, 1);
+			displayStringWrite("    En curso    ");
+		}
+
 	}
 }
 
