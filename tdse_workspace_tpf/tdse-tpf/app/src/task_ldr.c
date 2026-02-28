@@ -204,7 +204,8 @@ void task_ldr_update(void *parameters)
 								p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
 							}
 							else {
-							p_task_ldr_dta->state = ST_LDR_XX_FALLING;
+							p_task_ldr_dta->state = ST_LDR_XX_FALLING
+							p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
 							}
 							p_task_ldr_dta->accumulated = 0;
 						}
