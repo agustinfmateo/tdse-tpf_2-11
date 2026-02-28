@@ -22,7 +22,7 @@
 
 #define COUNTER_INIT				0ul
 #define COUNTER_MIN					0ul
-#define COUNTER_MAX					1ul
+#define COUNTER_MAX					5ul
 
 /********************** external data declaration *****************************/
 uint32_t g_task_ldr_cnt;
@@ -115,8 +115,6 @@ void task_ldr_update(void *parameters)
     }
     __asm("CPSIE i");	/* enable interrupts*/
 
-    //b_time_update_required = true;
-
     while (b_time_update_required)
     {
 		/* Protect shared resource (g_task_sensor_tick_cnt) */
@@ -139,6 +137,8 @@ void task_ldr_update(void *parameters)
     		/* Update Task Sensor Configuration & Data Pointer */
 			p_task_ldr_cfg = &task_ldr_cfg_list[index];
 			p_task_ldr_dta = &task_ldr_dta_list[index];
+
+			if(p_task_ldr_dta->sys_cfg->mode != LIGHT) continue;
 
 			LDR_Update(p_task_ldr_cfg->hadc);
 
@@ -177,6 +177,7 @@ void task_ldr_update(void *parameters)
 							}
 							else {
 							p_task_ldr_dta->state = ST_LDR_XX_RISING;
+							p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
 							}
 							p_task_ldr_dta->accumulated=0;
 						}
