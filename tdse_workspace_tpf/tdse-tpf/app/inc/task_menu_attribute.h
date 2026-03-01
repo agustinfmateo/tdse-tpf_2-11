@@ -76,7 +76,8 @@ typedef enum task_menu_ev {EV_BTN_ENT_DOWN,
 						   EV_TIM_1_MIN,
 						   EV_TIME_OPEN,
 						   EV_TIME_CLOSE,
-						   EV_UI_TIMEOUT} task_menu_ev_t;
+						   EV_UI_TIMEOUT,
+						   EV_MENU_ERASE_CPLT} task_menu_ev_t;
 
 /* State of Task Menu */
 typedef enum task_menu_st { ST_SET_UP_OPENING_1_SPIN,
@@ -102,6 +103,7 @@ typedef enum task_menu_st { ST_SET_UP_OPENING_1_SPIN,
 							ST_SET_UP_CHECK_1_OPENCLOSE,
 							ST_SET_UP_CHECK_2_CLOSEALL,
 							ST_SET_UP_CHECK_3_OK,
+							ST_SET_UP_MENU_ERASE_MEMORY,
 							ST_NORMAL_MENU_1,
 							ST_NORMAL_CFG_MODE_1,
 							ST_NORMAL_MENU_21_OPENCLOSE,

@@ -2590,6 +2590,38 @@ void task_menu_update(void *parameters)
 					else p_task_menu_dta->flag = false;
 					break;
 
+				case ST_SET_UP_MENU_ERASE_MEMORY:
+					if(!p_task_menu_dta->flag) break;
+
+					if(EV_BTN_NEXT_DOWN == p_task_menu_dta->event)
+					{
+						p_task_menu_dta->flag = false;
+						p_task_menu_dta->state = ST_SET_UP_OPENING_1_SPIN;
+
+						HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+
+						p_sys_cfg_dta->sys_cfg_op->Speed=1;
+						p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
+						p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
+						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+
+						help = true;
+						task_display_menu_help(p_task_menu_dta->state);
+
+						clock_UI_Timeout_reset();
+					}
+					else if(EV_MENU_ERASE_CPLT)
+					{
+						displayCharPositionWrite(0, 0);
+						displayStringWrite("Memoria borrada ");
+						displayCharPositionWrite(0, 1);
+						displayStringWrite("Presione Next   ");
+
+						clock_UI_Timeout_reset();
+					}
+					else p_task_menu_dta->flag = false;
+					break;
+
 				case ST_NORMAL_MENU_1:
 					if(!p_task_menu_dta->flag) break;
 
@@ -3269,8 +3301,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(app_sleep || HAL_GetTick() - last_triggered > 3) { //Debounce
 			last_triggered = HAL_GetTick();
 
+			p_task_menu_dta->flag = false;
+			p_task_menu_dta->state = ST_SET_UP_MENU_ERASE_MEMORY;
+
 			EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
 			app_sleep = false;
+			app_cfg_cplt = false;
 			clock_UI_Timeout_reset();
 			HAL_PWR_DisableSleepOnExit();
 			HAL_ResumeTick();

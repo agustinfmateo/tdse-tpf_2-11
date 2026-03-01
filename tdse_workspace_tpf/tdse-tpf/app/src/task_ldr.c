@@ -28,8 +28,6 @@
 uint32_t g_task_ldr_cnt;
 volatile uint32_t g_task_ldr_tick_cnt;
 
-extern bool app_sleep;
-
 /********************** external functions definition ************************/
 
 /********************** internal data declaration ****************************/

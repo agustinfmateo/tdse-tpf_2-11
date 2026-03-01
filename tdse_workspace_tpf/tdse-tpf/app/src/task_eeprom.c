@@ -246,6 +246,8 @@ void task_eeprom_update(void *parameters)
 						p_task_eeprom_dta->current_slot_id = 0;
 						p_task_eeprom_dta->state = ST_EEPROM_IDLE;
 						p_task_eeprom_dta->event = EV_EEPROM_NONE;
+						put_event_task_menu(EV_MENU_ERASE_CPLT);
+						HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 						break;
 					}
 
