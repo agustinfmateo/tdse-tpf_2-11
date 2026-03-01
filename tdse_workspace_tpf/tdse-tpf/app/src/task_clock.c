@@ -99,74 +99,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		put_event_task_menu(EV_TIM_1_MIN);
 
 		/* Open/Close check */
-		if(app_cfg_cplt)
+		if(app_cfg_cplt && p_sys_cfg_sv->mode == TIME)
 		{
-			if(p_sys_cfg_sv->mode == TIME)
+
+			if((g_clock[1] == p_sys_cfg_sv->time_open_minute) && (g_clock[0] == p_sys_cfg_sv->time_open_hour))
 			{
-				if((g_clock[1] == p_sys_cfg_sv->time_open_minute) && (g_clock[0] == p_sys_cfg_sv->time_open_hour))
-				{
-					put_event_task_menu(EV_TIME_OPEN);
-				}
-				if((g_clock[1] == p_sys_cfg_sv->time_close_minute) && (g_clock[0] == p_sys_cfg_sv->time_close_hour))
-				{
-					put_event_task_menu(EV_TIME_CLOSE);
-				}
+				put_event_task_menu(EV_TIME_OPEN);
 			}
-			else if((p_sys_cfg_sv->mode == LIGHT) && app_sleep)
+			if((g_clock[1] == p_sys_cfg_sv->time_close_minute) && (g_clock[0] == p_sys_cfg_sv->time_close_hour))
 			{
-				static uint8_t open_cnt = 0;
-				static uint8_t close_cnt = 0;
-				static uint32_t ldr_dta = 0;
-				static const uint8_t cnt_size = 3;
-
-				LDR_Request(&hadc1);
-				LDR_Update(&hadc1);
-				while(!LDR_Is_Data_Ready());
-				LDR_Update(&hadc1);
-				ldr_dta = LDR_Get_Average_Value();
-
-				switch(p_sys_cfg_sv->light_open)
-				{
-					case LOW:
-						if(ldr_dta > OPEN_SENSITIVITY_L) open_cnt++;
-						break;
-
-					case MED:
-						if(ldr_dta > OPEN_SENSITIVITY_M) open_cnt++;
-						break;
-
-					case HIGH:
-						if(ldr_dta > OPEN_SENSITIVITY_H) open_cnt++;
-						break;
-				}
-				switch(p_sys_cfg_sv->light_close)
-				{
-					case LOW:
-						if(ldr_dta < CLOSE_SENSITIVITY_L) close_cnt++;
-						break;
-
-					case MED:
-						if(ldr_dta < CLOSE_SENSITIVITY_M) close_cnt++;
-						break;
-
-					case HIGH:
-						if(ldr_dta < CLOSE_SENSITIVITY_H) close_cnt++;
-						break;
-				}
-
-				if((close_cnt != 0) && (open_cnt != 0))
-				{
-					open_cnt = 0;
-					close_cnt = 0;
-				}
-				else if(close_cnt >= cnt_size)
-				{
-					put_event_task_menu(EV_LDR_LOW);
-				}
-				else if(open_cnt >= cnt_size)
-				{
-					put_event_task_menu(EV_LDR_ACTIVATED);
-				}
+				put_event_task_menu(EV_TIME_CLOSE);
 			}
 		}
 

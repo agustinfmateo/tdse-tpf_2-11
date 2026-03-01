@@ -28,11 +28,15 @@
 uint32_t g_task_ldr_cnt;
 volatile uint32_t g_task_ldr_tick_cnt;
 
+extern bool app_sleep;
+
 /********************** external functions definition ************************/
 
 /********************** internal data declaration ****************************/
 const char *p_task_ldr 		    = "Task LDR (Sensor LDR)";
 const char *p_task_ldr_ 		= "Non-Blocking & Update By Time Code";
+
+bool ldr_triggered_event = false;
 
 const task_ldr_cfg_t task_ldr_cfg_list[] = {
 	{&hadc1,  EV_LDR_ACTIVATED,  EV_LDR_LOW, COUNTER_MAX},
@@ -138,13 +142,17 @@ void task_ldr_update(void *parameters)
 			p_task_ldr_cfg = &task_ldr_cfg_list[index];
 			p_task_ldr_dta = &task_ldr_dta_list[index];
 
-			if(p_task_ldr_dta->sys_cfg->mode != LIGHT) continue;
+			if (p_task_ldr_dta->sys_cfg->mode != LIGHT) {
+			        b_measuring = false;
+			        continue;
+			    }
 
 			LDR_Update(p_task_ldr_cfg->hadc);
 
 			if(LDR_Is_Data_Ready()){
 				b_measuring = false;
 				uint16_t ldr_val = LDR_Get_Average_Value();
+				ldr_triggered_event = false;
 
 				if(ldr_val > list_sstv_open[p_task_ldr_dta->sys_cfg->light_open]){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_UPPER;
@@ -174,6 +182,7 @@ void task_ldr_update(void *parameters)
 								p_task_ldr_dta->accumulated/p_task_ldr_cfg->counter_max <= list_sstv_close[p_task_ldr_dta->sys_cfg->light_close]) {
 								put_event_task_menu(p_task_ldr_cfg->signal_low);
 								p_task_ldr_dta->state = ST_LDR_XX_HIDDEN;
+								ldr_triggered_event = true;
 							}
 							else {
 							p_task_ldr_dta->state = ST_LDR_XX_RISING;
@@ -202,9 +211,10 @@ void task_ldr_update(void *parameters)
 								put_event_task_menu(p_task_ldr_cfg->signal_up);
 								p_task_ldr_dta->state = ST_LDR_XX_ON;
 								p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
+								ldr_triggered_event = true;
 							}
 							else {
-							p_task_ldr_dta->state = ST_LDR_XX_FALLING
+							p_task_ldr_dta->state = ST_LDR_XX_FALLING;
 							p_task_ldr_dta->counter = p_task_ldr_cfg->counter_max;
 							}
 							p_task_ldr_dta->accumulated = 0;
@@ -222,14 +232,24 @@ void task_ldr_update(void *parameters)
 
 			}
 
+			if (app_sleep) {
+			        if (ldr_triggered_event) {
+			            app_sleep = false;
+			        } else {
+			            HAL_PWR_EnableSleepOnExit();
+			            HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+			        }
+
+			}
+
+
 			//Si no se está midiendo empezar
 			if (!b_measuring) {
 				b_measuring = true;
 				LDR_Request(p_task_ldr_cfg->hadc);
-
 			}
 		}
-    }
+	}
 }
 
 /********************** end of file ******************************************/
