@@ -127,6 +127,9 @@ void app_init(void)
 	__asm("CPSID i");	/* disable interrupts*/
 	g_app_tick_cnt = G_APP_TICK_CNT_INI;
 	g_task_sensor_tick_cnt = G_APP_TICK_CNT_INI;
+	g_task_ldr_tick_cnt = G_APP_TICK_CNT_INI;
+	g_task_actuator_tick_cnt = G_APP_TICK_CNT_INI;
+	g_task_eeprom_tick_cnt = G_APP_TICK_CNT_INI;
 	g_task_menu_tick_cnt = G_APP_TICK_CNT_INI;
     __asm("CPSIE i");	/* enable interrupts*/
 }
