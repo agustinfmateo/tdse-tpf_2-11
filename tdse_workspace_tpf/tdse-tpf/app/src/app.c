@@ -50,6 +50,7 @@
 #include "task_menu.h"
 #include "task_ldr.h"
 #include "task_eeprom.h"
+#include "task_display.h"
 
 /********************** macros and definitions *******************************/
 #define G_APP_CNT_INI		0ul
@@ -76,7 +77,8 @@ const task_cfg_t task_cfg_list[]	= {
 		{task_ldr_init,		 	task_ldr_update,		NULL},
 		{task_actuator_init, 	task_actuator_update,	NULL},
 		{task_eeprom_init,		task_eeprom_update,		NULL},
-		{task_menu_init,	 	task_menu_update, 		NULL}
+		{task_menu_init,	 	task_menu_update, 		NULL},
+		{task_display_init,	 	task_display_update, 	NULL}
 };
 
 #define TASK_QTY	(sizeof(task_cfg_list)/sizeof(task_cfg_t))
@@ -131,6 +133,7 @@ void app_init(void)
 	g_task_actuator_tick_cnt = G_APP_TICK_CNT_INI;
 	g_task_eeprom_tick_cnt = G_APP_TICK_CNT_INI;
 	g_task_menu_tick_cnt = G_APP_TICK_CNT_INI;
+	g_task_display_tick_cnt = G_APP_TICK_CNT_INI;
     __asm("CPSIE i");	/* enable interrupts*/
 }
 
@@ -178,6 +181,7 @@ void HAL_SYSTICK_Callback(void)
 	g_task_ldr_tick_cnt++;
 	g_task_actuator_tick_cnt++;
 	g_task_eeprom_tick_cnt++;
+	g_task_display_tick_cnt++;
 }
 
 /********************** end of file ******************************************/

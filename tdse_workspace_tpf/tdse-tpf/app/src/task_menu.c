@@ -52,7 +52,7 @@
 #include "task_clock.h"
 #include "task_eeprom_interface.h"
 #include "task_eeprom.h"
-#include "display.h"
+#include "task_display.h"
 #include "motor.h"
 
 /********************** macros and definitions *******************************/
@@ -68,8 +68,8 @@ task_menu_dta_t task_menu_dta =
 	{DEL_MEN_XX_MIN, ST_SET_UP_OPENING_1_SPIN, EV_BTN_ENT_UP, false};
 
 /********************** internal functions declaration ***********************/
-void task_display_refresh(void);
 void task_display_menu_help(task_menu_st_t state);
+void task_display_menu_update(task_menu_st_t state);
 
 /********************** internal data definition *****************************/
 const char *p_task_menu 		= "Task Menu (Interactive Menu)";
@@ -133,14 +133,14 @@ void task_menu_init(void *parameters)
 	cycle_counter_init();
 	cycle_counter_reset();
 
-	displayInit( DISPLAY_CONNECTION_GPIO_4BITS );
+	//displayInit( DISPLAY_CONNECTION_GPIO_4BITS );
 	clock_UI_Timeout_set(3);
 
     displayCharPositionWrite(0, 0);
 	displayStringWrite("   Inicio de    ");
 	displayCharPositionWrite(0, 1);
 	displayStringWrite("   sistema...   ");
-	HAL_Delay(1000);
+	menu_delay_update_display(1000);
 
 	mem_empty = !eeprom_check_and_load(ID_EEPROM, p_sys_cfg_dta->sys_cfg_op, p_sys_cfg_dta->sys_cfg_save);
 
@@ -150,7 +150,7 @@ void task_menu_init(void *parameters)
 		displayStringWrite("Configuracion de");
 		displayCharPositionWrite(0, 1);
 		displayStringWrite("sentido de giro ");
-		HAL_Delay(5000);
+		menu_delay_update_display(5000);
 
 		displayCharPositionWrite(0, 0);
 		displayStringWrite("En un momento se");
@@ -161,7 +161,7 @@ void task_menu_init(void *parameters)
 		p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
 		p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
 
-		HAL_Delay(3000);
+		menu_delay_update_display(3000);
 
 		put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 
@@ -503,7 +503,7 @@ void task_menu_update(void *parameters)
 						g_clock[0] = 0;
 						g_clock[1] = 0;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -530,7 +530,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -539,12 +539,12 @@ void task_menu_update(void *parameters)
 						if(mem_empty)
 						{
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						clock_UI_Timeout_reset();
 					}
@@ -560,7 +560,7 @@ void task_menu_update(void *parameters)
 						clk_array[1] = g_clock[0] % 10;
 						clk_array[2] = g_clock[1] / 10;
 						clk_array[3] = g_clock[1] % 10;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 					}
 
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -571,7 +571,7 @@ void task_menu_update(void *parameters)
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
 
 							clock_UI_Timeout_reset();
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 					}
 					else p_task_menu_dta->flag = false;
@@ -584,7 +584,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -593,12 +593,12 @@ void task_menu_update(void *parameters)
 						if(mem_empty)
 						{
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -613,7 +613,7 @@ void task_menu_update(void *parameters)
 						clk_array[1] = p_sys_cfg_dta->sys_cfg_save->time_open_hour % 10;
 						clk_array[2] = p_sys_cfg_dta->sys_cfg_save->time_open_minute / 10;
 						clk_array[3] = p_sys_cfg_dta->sys_cfg_save->time_open_minute % 10;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 
@@ -623,7 +623,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 							clock_UI_Timeout_reset();
 						}
 					}
@@ -637,7 +637,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -646,12 +646,12 @@ void task_menu_update(void *parameters)
 						if(mem_empty)
 						{
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						clock_UI_Timeout_reset();
 					}
@@ -665,7 +665,7 @@ void task_menu_update(void *parameters)
 						clk_array[1] = p_sys_cfg_dta->sys_cfg_save->time_close_hour % 10;
 						clk_array[2] = p_sys_cfg_dta->sys_cfg_save->time_close_minute / 10;
 						clk_array[3] = p_sys_cfg_dta->sys_cfg_save->time_close_minute % 10;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
@@ -673,7 +673,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 							clock_UI_Timeout_reset();
 						}
 					}
@@ -687,7 +687,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_XX_22_HOURU;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -698,7 +698,7 @@ void task_menu_update(void *parameters)
 						else if(*p_clock_id == TIME_OPEN) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
 						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -707,7 +707,7 @@ void task_menu_update(void *parameters)
 
 						if(clk_array[0] >= 2) clk_array[0] = 0;
 						else clk_array[0]++;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -716,7 +716,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						clock_UI_Timeout_reset();
 					}
@@ -730,7 +730,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_XX_23_MINUTED;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -739,9 +739,9 @@ void task_menu_update(void *parameters)
 
 						if(*p_clock_id == CLOCK) p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 						else if(*p_clock_id == TIME_OPEN) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
-						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
+						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -752,7 +752,7 @@ void task_menu_update(void *parameters)
 						else if(clk_array[1] < 3) clk_array[1]++;
 						else if(clk_array[0] >= 2) clk_array[1] = 0;
 						else clk_array[1]++;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -761,7 +761,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -776,7 +776,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_XX_24_MINUTEU;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -785,9 +785,9 @@ void task_menu_update(void *parameters)
 
 						if(*p_clock_id == CLOCK) p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 						else if(*p_clock_id == TIME_OPEN) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
-						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
+						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -796,7 +796,7 @@ void task_menu_update(void *parameters)
 
 						if(clk_array[2] >= 5) clk_array[2] = 0;
 						else clk_array[2]++;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -805,7 +805,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 
@@ -821,7 +821,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_XX_25_SAVE;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -830,9 +830,9 @@ void task_menu_update(void *parameters)
 
 						if(*p_clock_id == CLOCK) p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 						else if(*p_clock_id == TIME_OPEN) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
-						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
+						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -841,7 +841,7 @@ void task_menu_update(void *parameters)
 
 						if(clk_array[3] >= 9) clk_array[3] = 0;
 						else clk_array[3]++;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -850,7 +850,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -865,7 +865,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_TIME_XX_21_HOURD;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -874,9 +874,9 @@ void task_menu_update(void *parameters)
 
 						if(*p_clock_id == CLOCK) p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 						else if(*p_clock_id == TIME_OPEN) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
-						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
+						else if(*p_clock_id == TIME_CLOSE) p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -903,7 +903,7 @@ void task_menu_update(void *parameters)
 							put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
 
 						}
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -912,7 +912,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -927,7 +927,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -936,12 +936,12 @@ void task_menu_update(void *parameters)
 						if(mem_empty)
 						{
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 							clock_UI_Timeout_reset();
 						}
 					}
@@ -949,7 +949,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_2_SEL;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -958,7 +958,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -975,7 +975,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
 						aux_light_id = MED;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -984,7 +984,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
 						aux_light_id = LOW;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -993,7 +993,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_3_SAVE;
 
 						aux_light_id = HIGH;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1002,7 +1002,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1017,7 +1017,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_OPEN_2_SEL;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1027,7 +1027,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->sys_cfg_save->light_open = aux_light_id;
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1036,7 +1036,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1051,7 +1051,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1060,12 +1060,12 @@ void task_menu_update(void *parameters)
 						if(mem_empty)
 						{
 							p_task_menu_dta->state = ST_SET_UP_SAVE_CONF;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						else
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1074,7 +1074,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_2_SEL;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1083,7 +1083,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1100,7 +1100,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
 						aux_light_id = MED;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1109,7 +1109,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
 						aux_light_id = LOW;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1118,7 +1118,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_3_SAVE;
 
 						aux_light_id = HIGH;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1127,7 +1127,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1143,7 +1143,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_LIGHT_CLOSE_2_SEL;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1153,7 +1153,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->sys_cfg_save->light_close = aux_light_id;
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1162,7 +1162,7 @@ void task_menu_update(void *parameters)
 						if(!mem_empty)
 						{
 							p_task_menu_dta->state = ST_NORMAL_MENU_1;
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 
 						clock_UI_Timeout_reset();
@@ -1177,7 +1177,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1189,7 +1189,7 @@ void task_menu_update(void *parameters)
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1202,7 +1202,7 @@ void task_menu_update(void *parameters)
 						{
 							aux_timer = 0;
 							motorStop(p_actuator);
-							task_display_update(p_task_menu_dta->state);
+							task_display_menu_update(p_task_menu_dta->state);
 						}
 						p_task_menu_dta->flag = false;
 						break;
@@ -1223,7 +1223,7 @@ void task_menu_update(void *parameters)
 						p_sys_cfg_dta->sys_cfg_op->SpinRight = !p_sys_cfg_dta->sys_cfg_op->SpinRight;
 						aux_timer = HAL_GetTick();
 						motorMove(p_actuator);
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1233,7 +1233,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->open = false;
 						app_cfg_cplt = true;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1243,7 +1243,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1269,7 +1269,7 @@ void task_menu_update(void *parameters)
 						motorStop(p_actuator);
 						aux_tick = HAL_GetTick() - aux_timer;
 						p_sys_cfg_dta->sys_cfg_op->SpinRight = !p_sys_cfg_dta->sys_cfg_op->SpinRight;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 					}
 					else p_task_menu_dta->flag = false;
 					break;
@@ -1285,7 +1285,7 @@ void task_menu_update(void *parameters)
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1328,7 +1328,7 @@ void task_menu_update(void *parameters)
 					}
 					else if(p_task_menu_dta->event == EV_MENU_ERASE_CPLT)
 					{
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1341,14 +1341,14 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_CFG_MODE_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_21_OPENCLOSE;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1364,7 +1364,7 @@ void task_menu_update(void *parameters)
 					else if(EV_TIM_1_MIN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						if((p_sys_cfg_dta->sys_cfg_save->mode == MANUAL) && app_sleep)
 						{
 							HAL_SuspendTick();
@@ -1382,14 +1382,14 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1407,7 +1407,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1432,7 +1432,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1456,7 +1456,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1481,7 +1481,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1492,14 +1492,14 @@ void task_menu_update(void *parameters)
 						p_sys_cfg_dta->sys_cfg_save->mode = MANUAL;
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
 
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1524,7 +1524,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1541,7 +1541,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1555,7 +1555,6 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_21_OPENCLOSE;
 
-						task_display_refresh();
 						displayCharPositionWrite(0, 0);
 						displayStringWrite("  ABRIR/CERRAR  ");
 
@@ -1565,7 +1564,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ENT_DOWN == p_task_menu_dta->event)
@@ -1582,7 +1581,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_1;
-						task_display_update(p_task_menu_dta->state);
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else p_task_menu_dta->flag = false;
@@ -1613,8 +1612,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
-		static uint32_t last_triggered = 0;
-		last_triggered = HAL_GetTick();
+		//static p_task_menu_dta;
 		EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
 		app_sleep = false;
 		app_cfg_cplt = false;
@@ -1627,22 +1625,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 /********************** internal functions definition ************************/
 
-void task_display_refresh(void)
-{
-	char menu_str[16] = "                ";
-	displayCharPositionWrite(0, 0);
-	displayStringWrite(menu_str);
-	displayCharPositionWrite(0, 1);
-	displayStringWrite(menu_str);
-}
-
 void task_display_menu_help(task_menu_st_t state)
 {
 	static uint32_t star_tick = 0;
 	static uint8_t cnt = 0;
 
 	if(star_tick == 0) star_tick = HAL_GetTick();
-	else if(star_tick - HAL_GetTick() < cnt * 3000) return;
+	else if(HAL_GetTick() - star_tick < cnt * 2000) return;
 
 	if(state == ST_SET_UP_OPENING_1_SPIN)
 	{
@@ -1859,26 +1848,10 @@ void task_display_menu_help(task_menu_st_t state)
 			displayStringWrite("apretar NEXT    ");
 			cnt++;
 		}
-		else if(cnt==8)
+		else if(cnt>=8)
 		{
 			displayCharPositionWrite(0, 0);
-			displayStringWrite("Enter = ABIERTA ");
-			displayCharPositionWrite(0, 1);
-			displayStringWrite("Escape = CERRADA");
-			cnt++;
-		}
-		else if(cnt==9)
-		{
-			displayCharPositionWrite(0, 0);
-			displayStringWrite("Escape = CERRADA");
-			displayCharPositionWrite(0, 1);
-			displayStringWrite("Next = A MEDIAS ");
-			cnt++;
-		}
-		else if(cnt>=10)
-		{
-			displayCharPositionWrite(0, 0);
-			displayStringWrite("   Esta abierta? ");
+			displayStringWrite(" Esta abierta?  ");
 			displayCharPositionWrite(0, 1);
 			displayStringWrite("NO -A medias- SI");
 			clock_UI_Timeout_reset();
@@ -1890,7 +1863,7 @@ void task_display_menu_help(task_menu_st_t state)
 	}
 }
 
-void task_display_update(task_menu_st_t state) {
+void task_display_menu_update(task_menu_st_t state) {
 	char menu_str[20];
 
 	switch(state) {
@@ -1917,7 +1890,7 @@ void task_display_update(task_menu_st_t state) {
 
 		case ST_SET_UP_CHECK_3_OK:
 			displayCharPositionWrite(0, 0);
-			displayStringWrite("    Cerro bien? ");
+			displayStringWrite("  Cerro bien?   ");
 			displayCharPositionWrite(0, 1);
 			displayStringWrite(" No          Si ");
 			break;
@@ -1952,7 +1925,6 @@ void task_display_update(task_menu_st_t state) {
 			break;
 
 		case ST_SET_UP_TIME_XX_21_HOURD:
-			task_display_refresh();
 			sprintf(menu_str, "%d               ", clk_array[0]);
 			displayCharPositionWrite(0, 0);
 			displayStringWrite(menu_str);
@@ -1964,7 +1936,6 @@ void task_display_update(task_menu_st_t state) {
 			break;
 
 		case ST_SET_UP_TIME_XX_22_HOURU:
-			task_display_refresh();
 			sprintf(menu_str, " %d              ", clk_array[1]);
 			displayCharPositionWrite(0, 0);
 			displayStringWrite(menu_str);
@@ -1976,7 +1947,6 @@ void task_display_update(task_menu_st_t state) {
             break;
 
 		case ST_SET_UP_TIME_XX_23_MINUTED:
-			task_display_refresh();
 			sprintf(menu_str, "   %d            ", clk_array[2]);
 			displayCharPositionWrite(0, 0);
 			displayStringWrite(menu_str);
@@ -1988,7 +1958,6 @@ void task_display_update(task_menu_st_t state) {
 			break;
 
 		case ST_SET_UP_TIME_XX_24_MINUTEU:
-			task_display_refresh();
 			sprintf(menu_str, "    %d           ", clk_array[3]);
 			displayCharPositionWrite(0, 0);
 			displayStringWrite(menu_str);
@@ -2000,7 +1969,6 @@ void task_display_update(task_menu_st_t state) {
 			break;
 
 		case ST_SET_UP_TIME_XX_25_SAVE:
-			task_display_refresh();
 			displayCharPositionWrite(0, 0);
 			displayStringWrite("        guardar ");
 			sprintf(menu_str, "%d%d:%d%d           ", clk_array[0], clk_array[1], clk_array[2], clk_array[3]);
@@ -2042,7 +2010,6 @@ void task_display_update(task_menu_st_t state) {
 		//Menu Normal
 		case ST_NORMAL_MENU_1:
 			sprintf(menu_str,"     %02d:%02d     ", g_clock[0], g_clock[1]);
-			task_display_refresh();
 			displayCharPositionWrite(0, 0);
 			displayStringWrite(menu_str);
 			displayCharPositionWrite(0, 1);
@@ -2057,7 +2024,6 @@ void task_display_update(task_menu_st_t state) {
 			break;
 
 		case ST_NORMAL_MENU_21_OPENCLOSE:
-			task_display_refresh();
 			displayCharPositionWrite(0, 0);
 			displayStringWrite("  ABRIR/CERRAR  ");
 			displayCharPositionWrite(0, 1);
@@ -2088,6 +2054,15 @@ void task_display_update(task_menu_st_t state) {
 		default:
 			break;
 	}
+}
+
+void menu_delay_update_display(uint32_t delay_ms)
+{
+    uint32_t start_tick = HAL_GetTick();
+    while ((HAL_GetTick() - start_tick) < delay_ms)
+    {
+        task_display_update(NULL);
+    }
 }
 
 /********************** end of file ******************************************/
