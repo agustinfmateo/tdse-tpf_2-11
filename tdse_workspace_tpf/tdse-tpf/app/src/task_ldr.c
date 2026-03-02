@@ -20,13 +20,13 @@
 #define G_TASK_SEN_CNT_INIT			0ul
 #define G_TASK_SEN_TICK_CNT_INI		0ul
 
-#define COUNTER_INIT				0ul
 #define COUNTER_MIN					0ul
 #define COUNTER_MAX					5ul
 
 /********************** external data declaration *****************************/
 uint32_t g_task_ldr_cnt;
 volatile uint32_t g_task_ldr_tick_cnt;
+extern bool ldr_time_to_measure;
 
 /********************** external functions definition ************************/
 
@@ -43,7 +43,7 @@ const task_ldr_cfg_t task_ldr_cfg_list[] = {
 #define LDR_CFG_QTY	(sizeof(task_ldr_cfg_list)/sizeof(task_ldr_cfg_t))
 
 task_ldr_dta_t task_ldr_dta_list[] = {
-	{COUNTER_INIT, 0, ST_LDR_XX_RISING, EV_LDR_XX_THRESH_MID, &sys_cfg},
+	{COUNTER_MAX, 0, ST_LDR_XX_RISING, EV_LDR_XX_THRESH_MID, &sys_cfg},
 };
 
 #define LDR_DTA_QTY	(sizeof(task_ldr_dta_list)/sizeof(task_ldr_dta_t))
@@ -230,19 +230,12 @@ void task_ldr_update(void *parameters)
 
 			}
 
-			if (app_sleep) {
-			        if (ldr_triggered_event) {
-			            app_sleep = false;
-			        } else {
-			            HAL_PWR_EnableSleepOnExit();
-			            HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-			        }
-
+			if (app_sleep && ldr_triggered_event) {
+				app_sleep = false;
 			}
-
-
 			//Si no se está midiendo empezar
-			if (!b_measuring) {
+			if (!b_measuring && ldr_time_to_measure) {
+				ldr_time_to_measure = false;
 				b_measuring = true;
 				LDR_Request(p_task_ldr_cfg->hadc);
 			}

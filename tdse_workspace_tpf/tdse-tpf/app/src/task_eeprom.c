@@ -16,6 +16,7 @@
 #include "task_eeprom_attribute.h"
 #include "task_eeprom_interface.h"
 #include "task_menu_attribute.h"
+#include "task_menu_interface.h"
 
 /********************** macros and definitions *******************************/
 #define G_TASK_EEP_CNT_INIT			0ul

@@ -28,6 +28,7 @@ extern void task_display_update(void *parameters);
 extern void displayCharPositionWrite(uint8_t charPositionX, uint8_t charPositionY);
 extern void displayStringWrite(const char *str);
 extern void displayClear(void);
+extern bool displayIsQueueEmpty(void);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

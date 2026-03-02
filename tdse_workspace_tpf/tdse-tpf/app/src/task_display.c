@@ -93,10 +93,10 @@ volatile uint32_t g_task_display_tick_cnt;
 
 
 /********************** internal functions declaration ***********************/
-static void displayPinWrite( uint8_t pinName, int value );
-static void displayDataBusWrite( uint8_t dataByte );
-static void displayCodeWrite( bool type, uint8_t dataBus );
-static void displayQueuePush( bool type, uint8_t data );
+static void displayPinWrite(uint8_t pinName, int value );
+static void displayDataBusWrite(uint8_t dataByte );
+static void displayCodeWrite(bool type, uint8_t dataBus );
+static void displayQueuePush(bool type, uint8_t data );
 void display_delay_us(uint32_t delay_us);
 
 /********************** external functions definition ************************/
@@ -106,7 +106,6 @@ void task_display_init(void *parameters)
     uint32_t index;
     task_display_dta_t *p_task_display_dta;
 
-    /* Print out: Task Initialized */
     LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_display_init), p_task_display);
 
     g_task_display_cnt = G_TASK_DISP_CNT_INIT;
@@ -123,7 +122,6 @@ void task_display_init(void *parameters)
 
     g_task_display_tick_cnt = G_TASK_DISP_TICK_CNT_INI;
 
-    /* --- Secuencia de Inicialización Bloqueante --- */
     HAL_Delay(50);
 
     displayCodeWrite( DISPLAY_RS_INSTRUCTION, DISPLAY_IR_FUNCTION_SET | DISPLAY_IR_FUNCTION_SET_8BITS );
@@ -214,8 +212,6 @@ void task_display_update(void *parameters)
     }
 }
 
-/* API Calls (Non-Blocking via Queue) */
-
 void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
 {
     uint8_t target_addr = 0;
@@ -227,7 +223,7 @@ void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
             target_addr = DISPLAY_16x2_LINE2_FIRST_CHARACTER_ADDRESS + charPositionX;
             break;
         default:
-            return; /* Out of bounds for 16x2 */
+            return;
     }
     displayQueuePush( DISPLAY_RS_INSTRUCTION, DISPLAY_IR_SET_DDRAM_ADDR | target_addr );
 }
@@ -288,7 +284,6 @@ static void displayDataBusWrite( uint8_t dataBus )
 {
     task_display_dta_t *p_dta = &task_display_dta_list[0];
 
-    /* Envía el Nibble Alto (High Nibble) */
     displayPinWrite( DISPLAY_PIN_EN, OFF );
     displayPinWrite( DISPLAY_PIN_D7, dataBus & 0b10000000 );
     displayPinWrite( DISPLAY_PIN_D6, dataBus & 0b01000000 );
@@ -320,6 +315,12 @@ void display_delay_us(uint32_t delay_us)
 
 	while (now < then)
 		now = cycle_counter_time_us();
+}
+
+bool displayIsQueueEmpty(void)
+{
+    task_display_dta_t *p_dta = &task_display_dta_list[0];
+    return (p_dta->head == p_dta->tail);
 }
 
 /********************** end of file ******************************************/

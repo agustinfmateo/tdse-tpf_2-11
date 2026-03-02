@@ -56,7 +56,7 @@ extern volatile uint32_t g_task_menu_tick_cnt;
 /********************** external functions declaration ***********************/
 extern void task_menu_init(void *parameters);
 extern void task_menu_update(void *parameters);
-
+extern bool menuIsInMainMenu(void);
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus
 }

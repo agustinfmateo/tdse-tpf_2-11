@@ -22,6 +22,7 @@ extern TIM_HandleTypeDef htim1;
 extern volatile uint8_t g_clock[2];
 extern bool app_sleep;
 extern bool app_cfg_cplt;
+extern bool ldr_time_to_measure;
 
 /********************** external functions declaration ***********************/
 void clock_init(void);

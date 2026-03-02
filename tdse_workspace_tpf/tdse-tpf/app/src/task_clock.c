@@ -32,7 +32,7 @@ sys_cfg_save_t *p_sys_cfg_sv = &sys_cfg;
 volatile uint8_t g_clock[2];
 bool app_sleep;
 bool app_cfg_cplt;
-
+bool ldr_time_to_measure = false;
 /********************** external functions definition ************************/
 void clock_init(void)
 {
@@ -69,14 +69,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	cycle_counter_reset();
 
 	static uint32_t cnt_sec = 0;
-	static uint32_t cycle_counter_time_us;
+	static uint32_t cycle_time_us;
 
 	cnt_sec++;
 
 	if(!app_sleep)
 	{
 		APP_UI_Timeout_cnt++;
-		if((APP_UI_Timeout_cnt == APP_UI_Timeout))
+		if((APP_UI_Timeout_cnt >= APP_UI_Timeout))
 		{
 			put_event_task_menu(EV_UI_TIMEOUT);
 		}
@@ -97,7 +97,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			g_clock[0] = 0;
 		}
 		put_event_task_menu(EV_TIM_1_MIN);
-
 		/* Open/Close check */
 		if(app_cfg_cplt && p_sys_cfg_sv->mode == TIME)
 		{
@@ -111,7 +110,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				put_event_task_menu(EV_TIME_CLOSE);
 			}
 		}
-
+		if(app_cfg_cplt && p_sys_cfg_sv->mode == LIGHT)
+		{
+			ldr_time_to_measure = true;
+		}
 		if(app_sleep)
 		{
 			HAL_ResumeTick();
@@ -119,10 +121,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 	}
 
-	cycle_counter_time_us = cycle_counter_time_us();
-	if (WCET_clock < cycle_counter_time_us)
+	cycle_time_us = cycle_counter_time_us();
+	if (WCET_clock < cycle_time_us)
 	{
-		WCET_clock = cycle_counter_time_us;
+		WCET_clock = cycle_time_us;
 	}
 }
 /********************** internal functions definition ************************/

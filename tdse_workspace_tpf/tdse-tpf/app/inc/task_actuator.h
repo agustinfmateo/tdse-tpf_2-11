@@ -44,7 +44,7 @@ extern "C" {
 #endif
 
 /********************** inclusions *******************************************/
-
+#include <stdbool.h>
 /********************** macros ***********************************************/
 
 /********************** typedef **********************************************/
@@ -56,6 +56,7 @@ extern volatile uint32_t g_task_actuator_tick_cnt;
 /********************** external functions declaration ***********************/
 extern void task_actuator_init(void *parameters);
 extern void task_actuator_update(void *parameters);
+extern bool actuatorIsIdle(void);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

@@ -51,6 +51,7 @@
 #include "task_ldr.h"
 #include "task_eeprom.h"
 #include "task_display.h"
+#include "task_clock.h"
 
 /********************** macros and definitions *******************************/
 #define G_APP_CNT_INI		0ul
@@ -115,6 +116,8 @@ void app_init(void)
 	/* Print out: Application execution counter */
 	LOGGER_LOG(" %s = %lu\r\n", GET_NAME(g_app_cnt), g_app_cnt);
 
+	cycle_counter_init();
+
 	/* Go through the task arrays */
 	for (index = 0; TASK_QTY > index; index++)
 	{
@@ -124,8 +127,6 @@ void app_init(void)
 		/* Init variables */
 		task_dta_list[index].WCET = TASK_X_WCET_INI;
 	}
-
-	cycle_counter_init();
 
 	__asm("CPSID i");	/* disable interrupts*/
 	g_app_tick_cnt = G_APP_TICK_CNT_INI;
@@ -170,6 +171,17 @@ void app_update(void)
 				task_dta_list[index].WCET = cycle_counter_time_us;
 			}
 	    }
+
+    	if (app_sleep && displayIsQueueEmpty() && actuatorIsIdle() && menuIsInMainMenu())
+    	{
+    		//HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+
+    		HAL_SuspendTick();
+    		HAL_PWR_EnableSleepOnExit();
+    		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
+    		//HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+    	}
     }
 }
 
