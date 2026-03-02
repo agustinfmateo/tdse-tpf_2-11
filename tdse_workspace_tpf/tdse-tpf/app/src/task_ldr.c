@@ -143,14 +143,15 @@ void task_ldr_update(void *parameters)
 			if (p_task_ldr_dta->sys_cfg->mode != LIGHT) {
 			        b_measuring = false;
 			        continue;
-			    }
+			}
 
 			LDR_Update(p_task_ldr_cfg->hadc);
+			ldr_triggered_event = false;
 
 			if(LDR_Is_Data_Ready()){
 				b_measuring = false;
 				uint16_t ldr_val = LDR_Get_Average_Value();
-				ldr_triggered_event = false;
+
 
 				if(ldr_val > list_sstv_open[p_task_ldr_dta->sys_cfg->light_open]){
 					p_task_ldr_dta->event =	EV_LDR_XX_THRESH_UPPER;
@@ -221,7 +222,7 @@ void task_ldr_update(void *parameters)
 						break;
 
 					default:
-						p_task_ldr_dta->counter  = COUNTER_MIN;
+						p_task_ldr_dta->counter  = COUNTER_MAX;
 						p_task_ldr_dta->state = ST_LDR_XX_FALLING;
 						p_task_ldr_dta->event = EV_LDR_XX_THRESH_UPPER;
 

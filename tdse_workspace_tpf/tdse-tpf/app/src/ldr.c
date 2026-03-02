@@ -37,7 +37,7 @@ void LDR_Request(ADC_HandleTypeDef *hadc) {
 
 void LDR_Update(ADC_HandleTypeDef *hadc) {
 
-	if (b_reading || b_data_ready) {
+	if (b_reading || b_data_ready|| sample_idx != SAMPLES_SIZE) {
 		return;
 	}
 
@@ -49,6 +49,7 @@ void LDR_Update(ADC_HandleTypeDef *hadc) {
 
 	ldr_average = sum / SAMPLES_SIZE;
 	b_data_ready = true;
+	sample_idx = 0;
 }
 
 bool LDR_Is_Data_Ready(void) {
@@ -56,6 +57,7 @@ bool LDR_Is_Data_Ready(void) {
 }
 
 uint16_t LDR_Get_Average_Value(void) {
+	b_data_ready = false;
     return ldr_average;
 }
 
