@@ -373,6 +373,11 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_3_TIME_CLOSE;
 
+						//Para que al estar en ST_SET_UP_OPENING_5_OK
+						//Se pueda usar el put_event_task_actuator para abrir
+						p_sys_cfg_dta->sys_cfg_op->TimeOpening = 0;
+						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+
 						clock_UI_Timeout_reset();
 
 						help = true;
@@ -393,6 +398,8 @@ void task_menu_update(void *parameters)
 							displayCharPositionWrite(0, 1);
 							displayStringWrite("para comenzar   ");
 							aux_timer = 0;
+							p_sys_cfg_dta->sys_cfg_op->TimeOpening = 0;
+							put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						}
 						p_task_menu_dta->flag = false;
 						break;
