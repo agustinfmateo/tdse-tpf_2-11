@@ -1319,9 +1319,9 @@ void task_menu_update(void *parameters)
 						HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
 						p_sys_cfg_dta->sys_cfg_op->Speed = 2;
-						p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
+						p_sys_cfg_dta->sys_cfg_op->SpinRight=false;
 						p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
-						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						p_sys_cfg_dta->open = true;
 
 						help = true;
