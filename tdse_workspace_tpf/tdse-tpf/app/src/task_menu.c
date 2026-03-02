@@ -70,7 +70,7 @@ task_menu_dta_t task_menu_dta =
 /********************** internal functions declaration ***********************/
 void task_display_menu_help(task_menu_st_t state);
 void task_display_menu_update(task_menu_st_t state);
-
+void menu_delay_update_display(uint32_t delay_ms);
 /********************** internal data definition *****************************/
 const char *p_task_menu 		= "Task Menu (Interactive Menu)";
 const char *p_task_menu_ 		= "Non-Blocking & Update By Time Code";
@@ -897,7 +897,7 @@ void task_menu_update(void *parameters)
 						}
 						else if(*p_clock_id == TIME_CLOSE)
 						{
-							p_task_menu_dta->state = ST_SET_UP_TIME_OPEN_1;
+							p_task_menu_dta->state = ST_SET_UP_TIME_CLOSE_1;
 							p_sys_cfg_dta->sys_cfg_save->time_close_hour = clk_array[0]*10 + clk_array[1];
 							p_sys_cfg_dta->sys_cfg_save->time_close_minute = clk_array[2]*10 + clk_array[3];
 							put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
@@ -1554,10 +1554,7 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_21_OPENCLOSE;
-
-						displayCharPositionWrite(0, 0);
-						displayStringWrite("  ABRIR/CERRAR  ");
-
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1612,7 +1609,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(BTN_A_PIN == GPIO_Pin)
 	{
-		//static p_task_menu_dta;
+		task_menu_dta_t *p_task_menu_dta = &task_menu_dta;
+		p_task_menu_dta->flag = false;
+		p_task_menu_dta->state = ST_SET_UP_MENU_ERASE_MEMORY;
+
 		EXTI->IMR &= ~(BTN_NEX_PIN | BTN_ENT_PIN);
 		app_sleep = false;
 		app_cfg_cplt = false;
@@ -1620,6 +1620,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		HAL_PWR_DisableSleepOnExit();
 		HAL_ResumeTick();
 		put_event_task_eeprom(EV_EEPROM_ERASE_ALL, ID_EEPROM);
+		put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 	}
 }
 
@@ -1631,7 +1632,7 @@ void task_display_menu_help(task_menu_st_t state)
 	static uint8_t cnt = 0;
 
 	if(star_tick == 0) star_tick = HAL_GetTick();
-	else if(HAL_GetTick() - star_tick < cnt * 2000) return;
+	else if(HAL_GetTick() - star_tick < cnt * 2500) return;
 
 	if(state == ST_SET_UP_OPENING_1_SPIN)
 	{
@@ -1864,7 +1865,7 @@ void task_display_menu_help(task_menu_st_t state)
 }
 
 void task_display_menu_update(task_menu_st_t state) {
-	char menu_str[20];
+	char menu_str[40];
 
 	switch(state) {
 		case ST_SET_UP_SAVE_CONF:
