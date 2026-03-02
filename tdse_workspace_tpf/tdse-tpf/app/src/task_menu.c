@@ -1189,6 +1189,7 @@ void task_menu_update(void *parameters)
 
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						mem_empety = false;
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
 						task_display_menu_update(p_task_menu_dta->state);
@@ -1323,6 +1324,7 @@ void task_menu_update(void *parameters)
 						p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
 						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						p_sys_cfg_dta->open = true;
+						mem_empety = true;
 
 						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
