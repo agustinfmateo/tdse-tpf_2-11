@@ -77,8 +77,9 @@ const task_cfg_t task_cfg_list[]	= {
 		{task_ldr_init,		 	task_ldr_update,		NULL},
 		{task_actuator_init, 	task_actuator_update,	NULL},
 		{task_eeprom_init,		task_eeprom_update,		NULL},
-		{task_menu_init,	 	task_menu_update, 		NULL},
-		{task_display_init,	 	task_display_update, 	NULL}
+		{task_display_init,	 	task_display_update, 	NULL},
+		{task_menu_init,	 	task_menu_update, 		NULL}
+
 };
 
 #define TASK_QTY	(sizeof(task_cfg_list)/sizeof(task_cfg_t))
