@@ -162,8 +162,8 @@ void task_menu_init(void *parameters)
 
 		menu_delay_update_display(3000);
 
-		put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
-		p_sys_cfg_dta->open = true;
+		put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
+		p_sys_cfg_dta->open = false;
 
 		help = true;
 		task_display_menu_help(p_task_menu_dta->state);
@@ -291,8 +291,8 @@ void task_menu_update(void *parameters)
 					{
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
-						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
-						p_sys_cfg_dta->open = false;
+						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
+						p_sys_cfg_dta->open = true;
 						aux_spin = true;
 						clock_UI_Timeout_reset();
 						help = true;
@@ -1311,7 +1311,7 @@ void task_menu_update(void *parameters)
 
 						HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
-						p_sys_cfg_dta->sys_cfg_op->Speed=3;
+						p_sys_cfg_dta->sys_cfg_op->Speed = 2;
 						p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
 						p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
@@ -1668,7 +1668,7 @@ void task_display_menu_help(task_menu_st_t state)
 		else if(cnt >=1)
 		{
 			displayCharPositionWrite(0, 0);
-			displayStringWrite("Velocidad = 1   ");
+			displayStringWrite("Velocidad = 2   ");
 			displayCharPositionWrite(0, 1);
 			displayStringWrite("Test  -OK-   +  ");
 			clock_UI_Timeout_reset();
