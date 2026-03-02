@@ -230,10 +230,6 @@ void task_ldr_update(void *parameters)
 				}
 
 			}
-
-			if (app_sleep && ldr_triggered_event) {
-				app_sleep = false;
-			}
 			//Si no se está midiendo empezar
 			if (!b_measuring && ldr_time_to_measure) {
 				ldr_time_to_measure = false;

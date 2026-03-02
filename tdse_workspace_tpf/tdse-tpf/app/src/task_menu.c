@@ -1350,7 +1350,6 @@ void task_menu_update(void *parameters)
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
 					{
 						p_task_menu_dta->flag = false;
-						__HAL_GPIO_EXTI_CLEAR_IT(BTN_NEX_PIN | BTN_ENT_PIN);
 						EXTI->IMR |= (BTN_NEX_PIN | BTN_ENT_PIN); //Habilita las interrupciones usando máscaras
 						app_sleep = true;
 						clock_UI_Timeout_reset();
@@ -1458,11 +1457,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_23_SEL_TIME;
 
-						displayCharPositionWrite(0, 0);
-						displayStringWrite("Selec. modo de  ");
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("apertu. por hora");
-
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1501,11 +1496,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_NORMAL_MENU_24_SEL_LIGHT;
 
-						displayCharPositionWrite(0, 0);
-						displayStringWrite("Selec. modo de  ");
-						displayCharPositionWrite(0, 1);
-						displayStringWrite("apertura por luz");
-
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_BTN_ESC_DOWN == p_task_menu_dta->event)
@@ -1522,7 +1513,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->sys_cfg_save->mode = TIME;
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
-
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
@@ -1559,7 +1550,7 @@ void task_menu_update(void *parameters)
 
 						p_sys_cfg_dta->sys_cfg_save->mode = LIGHT;
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
-
+						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
 					}
 					else if(EV_UI_TIMEOUT == p_task_menu_dta->event)
