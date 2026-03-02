@@ -28,7 +28,7 @@ void motorStopL298N(const task_actuator_cfg_t *actuator);
 void motorMove(const task_actuator_cfg_t *actuator)
 {
 #if DRIVER_MOTOR==DRIVER1_L9110S
-	motorMove(actuator, actuator->sys_cfg_op->SpinRight);
+	motorMoveL9110S(actuator, actuator->sys_cfg_op->SpinRight);
 #endif
 #if DRIVER_MOTOR==DRIVER2_L298N
 	motorMoveL298N(actuator);
@@ -53,7 +53,7 @@ void setPWM(TIM_HandleTypeDef *timer, uint32_t channel, uint8_t pulse)
   HAL_TIM_PWM_Init(timer);
 
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = PERIOD*pulse/10;
+  sConfigOC.Pulse = PERIOD*(pulse/100 + 0.3);
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   HAL_TIM_PWM_ConfigChannel(timer, &sConfigOC, channel);

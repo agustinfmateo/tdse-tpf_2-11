@@ -157,7 +157,7 @@ void task_menu_init(void *parameters)
 		displayStringWrite("movera el motor ");
 
 		p_sys_cfg_dta->sys_cfg_op->Speed=3;
-		p_sys_cfg_dta->sys_cfg_op->SpinRight=true;
+		p_sys_cfg_dta->sys_cfg_op->SpinRight=false;
 		p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
 
 		menu_delay_update_display(3000);
@@ -293,7 +293,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_OPENING_2_SPEED;
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						p_sys_cfg_dta->open = true;
-						aux_spin = true;
+						aux_spin = false;
 						clock_UI_Timeout_reset();
 						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
@@ -305,7 +305,7 @@ void task_menu_update(void *parameters)
 
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						p_sys_cfg_dta->open = true;
-						aux_spin = false;
+						aux_spin = true;
 
 						clock_UI_Timeout_reset();
 
