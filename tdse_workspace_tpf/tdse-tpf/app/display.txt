@@ -1,0 +1,96 @@
+  display.c (display.h)
+   Non-Blocking Code -> Display Code Library
+
+  <<<display.h>>>
+
+Declara la macro pública SYSTEM_TIME_INCRMENT_MS como 10, luego los tipos de conexión del display 
+(DISPLAY_CONNECTION_GPIO_4BITS y DISPLAY_CONNECTION_GPIO_8BITS) en un enumerativo nombrado como 
+displayConnection_t y una estructura, display_t, que va a contener una variable con el tipo de conexión 
+(displayConnection_t connection).
+Por último se declaran las funciones void displayInit( displayConnection_t connection ), 
+void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY ) y 
+void displayStringWrite( const char * str )
+
+  <<<display.c>>>
+
+En primer lugar declara las macros privadas destinadas a ayudar con el manejo del display:
+
+  DISPLAY_IR_CLEAR_DISPLAY
+  DISPLAY_IR_ENTRY_MODE_SET
+  DISPLAY_IR_DISPLAY_CONTROL
+  DISPLAY_IR_FUNCTION_SET
+  DISPLAY_IR_SET_DDRAM_ADDR
+
+  DISPLAY_IR_ENTRY_MODE_SET_INCREMENT
+  DISPLAY_IR_ENTRY_MODE_SET_DECREMENT
+  DISPLAY_IR_ENTRY_MODE_SET_SHIFT
+  DISPLAY_IR_ENTRY_MODE_SET_NO_SHIFT
+
+  DISPLAY_IR_DISPLAY_CONTROL_DISPLAY_ON 
+  DISPLAY_IR_DISPLAY_CONTROL_DISPLAY_OFF
+  DISPLAY_IR_DISPLAY_CONTROL_CURSOR_ON  
+  DISPLAY_IR_DISPLAY_CONTROL_CURSOR_OFF 
+  DISPLAY_IR_DISPLAY_CONTROL_BLINK_ON   
+  DISPLAY_IR_DISPLAY_CONTROL_BLINK_OFF  
+
+  DISPLAY_IR_FUNCTION_SET_8BITS  
+  DISPLAY_IR_FUNCTION_SET_4BITS  
+  DISPLAY_IR_FUNCTION_SET_2LINES 
+  DISPLAY_IR_FUNCTION_SET_1LINE    
+  DISPLAY_IR_FUNCTION_SET_5x10DOTS 
+  DISPLAY_IR_FUNCTION_SET_5x8DOTS  
+
+  DISPLAY_20x4_LINE1_FIRST_CHARACTER_ADDRESS 
+  DISPLAY_20x4_LINE2_FIRST_CHARACTER_ADDRESS 
+  DISPLAY_20x4_LINE3_FIRST_CHARACTER_ADDRESS 
+  DISPLAY_20x4_LINE4_FIRST_CHARACTER_ADDRESS 
+
+  DISPLAY_RS_INSTRUCTION 
+  DISPLAY_RS_DATA        
+
+  DISPLAY_RW_WRITE 
+  DISPLAY_RW_READ  
+
+  DISPLAY_PIN_RS  
+  DISPLAY_PIN_RW  
+  DISPLAY_PIN_EN  
+  DISPLAY_PIN_D0    
+  DISPLAY_PIN_D1   
+  DISPLAY_PIN_D2    
+  DISPLAY_PIN_D3 
+  DISPLAY_PIN_D4 
+  DISPLAY_PIN_D5  
+  DISPLAY_PIN_D6  
+  DISPLAY_PIN_D7 
+
+Las cuales traducen las instrucciones, permitiendo utilizar palabras en vez de números.
+
+Seguido se declaran las variables privadas globales static display_t display y 
+static bool initial8BitCommunicationIsCompleted.
+
+Se define la función pública void displayInit( displayConnection_t connection ), que inicializa la 
+comunicación con el display y establece el tipo de conexión que se va a tener, si de 4 bits o 8 bits.
+En el caso de establecer una comunicación de 8 bits, se establece a la variable global 
+initial8BitCommunicationIsCompleted como False, en caso contrario se setea como True. Establecido 
+el tipo de conexión se limpia la pantalla, se ubica el cursor y se prende la pantalla.
+
+Se define la función pública void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY )
+, la cual establece la posición del cursor en charPositionY (sobre la fila) y charPositionX 
+(sobre la columna) a la hora de escribirse.
+
+Se define la función pública void displayStringWrite( const char * str ) que escribe el contenido de str
+en la pantalla del display.
+
+Se implementan 3 funciones privadas, utilizadas para implementar las 3 funciones públicas antes 
+mencionadas:
+
+static void displayCodeWrite( bool type, uint8_t dataBus ) que es utilizado para decir si se quiere 
+transmitir una instrucción o imprimir un carácter en el display (utilizando type) contenida o contenido 
+en dataBus
+
+static void displayPinWrite( uint8_t pinName, int value ) que es utilizado para, dependiendo del tipo 
+de conexión, establecer el valor del pinName según el valor de value.
+
+static void displayDataBusWrite( uint8_t dataBus ) que se utiliza para escribir en el bus de datos lo 
+contenido en la variable dataBus para ser imprimido en la pantalla del display, encargándose de mandar 
+los ticks para habilitar la escritura según el tipo de conexión que se utiliza.

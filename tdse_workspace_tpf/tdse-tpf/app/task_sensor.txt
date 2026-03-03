@@ -1,0 +1,50 @@
+  task_sensor.c (task_sensor.h, task_sensor_attribute.h) 
+   Non-Blocking & Update By Time Code -> Sensor Modeling
+  
+ 	<<<task_sensor_attribute.h>>>
+
+Define el tipo task_sensor_ev_t, enumerando los distintos eventos del módulo del sensor (EV_BTN_XX_UP 
+y EV_BTN_XX_DOWN).
+ 
+Define el tipo task_sensor_st_t, enumerando los distintos estados del módulo del sensor (ST_BTN_XX_UP, 
+ST_BTN_XX_FALLING, ST_BTN_XX_DOWN y ST_BTN_XX_RISING).
+ 
+Define el tipo task_sensor_id_t enumerando los id de los distintos sensores (ID_BTN_ENT, ID_BTN_NEX, 
+ID_BTN_ESC).
+ 
+Define la estructura task_sensor_cfg_t, integrando el id del sensor, el puerto GPIO, el pin del sensor, 
+el estado de activación (en este caso presionar), el tick máximo hasta la estabilización y por último, 
+las señales de tipo task_sensor_ev_t para señal en alto y bajo (enviar el evento de botón 
+presionado/liberado)
+ 
+Por último se define la estructura task_sensor_dta_t, integrando un tick, el estado del sensor y el 
+evento del mismo.
+  
+
+ 
+	<<<task_sensor.c>>>
+
+Primero se inicializan contadores y los valores máximos, mínimos y medios del delay de estabilización de 
+los botones. Define un array task_sensor_cfg_list del tipo task_sensor_cfg_t, indicando la configuración 
+de cada botón. Define la cantidad de configuraciones del botón SENSOR_CFG_QTY. Define un array 
+task_sensor_dta_list del tipo task_sensor_dta_t, para cada botón establce su correspondiente tick 
+como el delay mínimo (DEL_BTN_XX_MIN), el estado lo define en alto (ST_BTN_XX_UP) y el evento como 
+EV_BTN_XX_UP. Define la cantidad de datas distintas SENSOR_DTA_QTY. Inicializa el contador de vueltas 
+g_task_sensor_cnt y el de tick g_task_sensor_tick_cnt.
+  
+Define la función void task_sensor_init(void *parameters), que imprime que la función está corriendo y 
+una breve descripción de la misma. Inicializa el contador g_task_sensor_cnt y lo imprime. Luego entra en 
+un for para recorrer todos los sensores, imprimiendo el número del sensor, el estado y el evento. Por 
+último inicializa el contador de tick g_task_sensor_tick_cnt.
+  
+Define la función void task_sensor_update(void *parameters), aumenta en 1 el contador de vueltas 
+g_task_sensor_cnt, desactiva interrupciones y revisa, mediante un if, si el tiempo del contador 
+g_task_sensor_tick_cnt es mayor al de inicialización (G_TASK_SEN_TICK_CNT_INI), lo disminuye en 1 y 
+coloca el booleano b_time_update_required en 1, para que se actualice. Vuelve a habilitar las 
+interrupciones y, mientras que el booleano anterior sea verdadero, desactiva las interrupciones y, en cada 
+ciclo, revisa si el tiempo del contador g_task_sensor_tick_cnt es mayor al de inicialización, si es así 
+lo reduce en 1 y coloca el booleano en true, caso contrario lo setea en false dado que se "puso al día". 
+Vuelve a activar las interrupciones y actualiza las configuraciones y el puntero de datos de cada sensor, 
+mediante un ciclo for. Dentro del for, si la lectura del pin coincide con la condición de activación 
+definida en task_sensor_cfg_t, entonces actualiza el evento a EV_BTN_XX_DOWN, de lo contrario lo setea a 
+EV_BTN_XX_UP. Por último define un switch con los distintos casos, para pasar de un estado a otro.
