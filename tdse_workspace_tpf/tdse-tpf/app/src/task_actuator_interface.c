@@ -68,4 +68,18 @@ void put_event_task_actuator(task_actuator_ev_t event, task_actuator_id_t identi
 	p_task_actuator_dta->flag = true;
 }
 
+void select_init_state_close_task_actuator(task_actuator_id_t identifier)
+{
+	static bool b_init = true;
+	if(!b_init) return;
+	else
+	{
+		task_actuator_dta_t *p_task_actuator_dta;
+		p_task_actuator_dta = &task_actuator_dta_list[identifier];
+		p_task_actuator_dta->state = ST_BINDS_XX_CLOSE;
+		p_task_actuator_dta->event = EV_BINDS_XX_CLOSE;
+		b_init = false;
+	}
+}
+
 /********************** end of file ******************************************/

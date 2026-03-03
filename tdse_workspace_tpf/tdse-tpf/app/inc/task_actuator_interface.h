@@ -54,6 +54,7 @@ extern "C" {
 
 /********************** external functions declaration ***********************/
 extern void put_event_task_actuator(task_actuator_ev_t event, task_actuator_id_t identifier);
+extern void select_init_state_close_task_actuator(task_actuator_id_t identifier);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

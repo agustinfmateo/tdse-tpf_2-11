@@ -1189,7 +1189,7 @@ void task_menu_update(void *parameters)
 
 						put_event_task_eeprom(EV_EEPROM_SAVE_CYCLIC, ID_EEPROM);
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
-						mem_empety = false;
+						mem_empty = false;
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
 						task_display_menu_update(p_task_menu_dta->state);
@@ -1235,6 +1235,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
 						p_sys_cfg_dta->open = false;
+						select_init_state_close_task_actuator(ID_BINDS);
 						app_cfg_cplt = true;
 						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
@@ -1245,6 +1246,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
 						p_sys_cfg_dta->open = true;
+						p_sys_cfg_dta->sys_cfg_op->SpinRight = !p_sys_cfg_dta->sys_cfg_op->SpinRight;
 						app_cfg_cplt = true;
 						task_display_menu_update(p_task_menu_dta->state);
 						clock_UI_Timeout_reset();
@@ -1285,6 +1287,7 @@ void task_menu_update(void *parameters)
 						p_task_menu_dta->flag = false;
 						p_task_menu_dta->state = ST_SET_UP_CLOCK_1;
 
+						select_init_state_close_task_actuator(ID_BINDS);
 						put_event_task_actuator(EV_BINDS_XX_OPEN, ID_BINDS);
 						p_sys_cfg_dta->open = true;
 						app_cfg_cplt = true;
@@ -1324,7 +1327,7 @@ void task_menu_update(void *parameters)
 						p_sys_cfg_dta->sys_cfg_op->TimeOpening=1000;
 						put_event_task_actuator(EV_BINDS_XX_CLOSE, ID_BINDS);
 						p_sys_cfg_dta->open = true;
-						mem_empety = true;
+						mem_empty = true;
 
 						help = true;
 						task_display_menu_help(p_task_menu_dta->state);
