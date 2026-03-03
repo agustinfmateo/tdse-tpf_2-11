@@ -41,7 +41,7 @@
 #include "main.h"
 
 /* Demo includes. */
-#include "logger.h"
+//#include "logger.h"
 
 /* Application & Tasks includes. */
 #include "app.h"

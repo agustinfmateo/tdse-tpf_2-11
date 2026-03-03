@@ -4,7 +4,7 @@
 
 /* App includes. */
 #include "app.h"
-#include "logger.h"
+//#include "//LOGGER.h"
 #include "ldr.h"
 #include "task_ldr.h"
 #include "task_ldr_attribute.h"
@@ -73,13 +73,13 @@ void task_ldr_init(void *parameters){
 	task_ldr_ev_t event;
 
 	/* Print out: Task Initialized */
-	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_ldr_init), p_task_ldr);
-	LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_ldr), p_task_ldr_);
+	//LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_ldr_init), p_task_ldr);
+	//LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_ldr), p_task_ldr_);
 
 	g_task_ldr_cnt = G_TASK_SEN_CNT_INIT;
 
 	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_ldr_cnt), g_task_ldr_cnt);
+	//LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_ldr_cnt), g_task_ldr_cnt);
 
 	for (index = 0; LDR_DTA_QTY > index; index++)
 	{
@@ -87,13 +87,13 @@ void task_ldr_init(void *parameters){
 		p_task_ldr_dta = &task_ldr_dta_list[index];
 
 		/* Print out: Index & Task execution FSM */
-		LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
 
 		state = p_task_ldr_dta->state;
-		LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
 
 		event = p_task_ldr_dta->event;
-		LOGGER_LOG("   %s = %lu\r\n", GET_NAME(event), (uint32_t)event);
+		//LOGGER_LOG("   %s = %lu\r\n", GET_NAME(event), (uint32_t)event);
 	}
 	g_task_ldr_tick_cnt = G_TASK_SEN_TICK_CNT_INI;
 }

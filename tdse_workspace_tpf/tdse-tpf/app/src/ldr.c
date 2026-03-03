@@ -5,7 +5,7 @@
 
 /* App includes. */
 #include "ldr.h"
-#include "logger.h"
+//#include "logger.h"
 
 /* Application includes. */
 

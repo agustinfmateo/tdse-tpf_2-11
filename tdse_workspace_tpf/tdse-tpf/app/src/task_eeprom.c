@@ -8,7 +8,7 @@
 #include <string.h>
 
 /* Demo includes. */
-#include "logger.h"
+//#include "//LOGGER.h"
 #include "dwt.h"
 
 /* Application & Tasks includes. */
@@ -87,13 +87,13 @@ void task_eeprom_init(void *parameters)
 	task_eeprom_ev_t event;
 
 	/* Print out: Task Initialized */
-	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_eeprom_init), p_task_eeprom);
-	LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_eeprom), p_task_eeprom_);
+	//LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_eeprom_init), p_task_eeprom);
+	//LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_eeprom), p_task_eeprom_);
 
 	g_task_eeprom_cnt = G_TASK_EEP_CNT_INIT;
 
 	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_eeprom_cnt), g_task_eeprom_cnt);
+	//LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_eeprom_cnt), g_task_eeprom_cnt);
 
 	for (index = 0; EEPROM_DTA_QTY > index; index++)
 	{
@@ -101,15 +101,15 @@ void task_eeprom_init(void *parameters)
 		p_task_eeprom_dta = &task_eeprom_dta_list[index];
 
 		/* Print out: Index & Task execution FSM */
-		LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
 
 		state = p_task_eeprom_dta->state;
-		LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
 
 		event = p_task_eeprom_dta->event;
-		LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
 
-		LOGGER_LOG("  Init: Last ID: %lu, Slot: %d\r\n", p_task_eeprom_dta->current_id, p_task_eeprom_dta->current_slot_id);
+		//LOGGER_LOG("  Init: Last ID: %lu, Slot: %d\r\n", p_task_eeprom_dta->current_id, p_task_eeprom_dta->current_slot_id);
 	}
 
 	g_task_eeprom_tick_cnt = G_TASK_EEP_TICK_CNT_INI;
@@ -196,7 +196,7 @@ void task_eeprom_update(void *parameters)
 					else if (p_task_eeprom_dta->event == EV_EEPROM_ERASE_ALL)
 					{
 						g_i2c_op_complete = false;
-						LOGGER_LOG("Formatting in progress...\r\n");
+						//LOGGER_LOG("Formatting in progress...\r\n");
 						memset(erase_buffer, 0xFF, PAGE_SIZE); // crea un buffer para eliminar una página a la vez
 
 						p_task_eeprom_dta->wr_addr = 0;
@@ -242,7 +242,7 @@ void task_eeprom_update(void *parameters)
 
 				case ST_EEPROM_ERASE_RUNNING:
 					if(p_task_eeprom_dta->wr_addr >= TOTAL_SIZE){
-						LOGGER_LOG("Formatting Complete.\r\n")
+						//LOGGER_LOG("Formatting Complete.\r\n")
 						p_task_eeprom_dta->current_id = 0;
 						p_task_eeprom_dta->current_slot_id = 0;
 						p_task_eeprom_dta->state = ST_EEPROM_IDLE;

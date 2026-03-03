@@ -23,7 +23,7 @@
 /* USER CODE BEGIN Includes */
 
 /* Demo includes. */
-#include "logger.h"
+//#include "logger.h"
 #include "dwt.h"
 
 /* Application includes. */
@@ -75,7 +75,7 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern void initialise_monitor_handles(void);
+//extern void initialise_monitor_handles(void);
 
 /* USER CODE END 0 */
 
@@ -87,7 +87,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	initialise_monitor_handles();
+//	initialise_monitor_handles();
 
   /* USER CODE END 1 */
 

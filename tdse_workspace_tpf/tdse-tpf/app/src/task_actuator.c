@@ -41,7 +41,7 @@
 #include "main.h"
 
 /* Demo includes. */
-#include "logger.h"
+//#include "//LOGGER.h"
 
 /* Application & Tasks includes. */
 #include "app.h"
@@ -92,13 +92,13 @@ void task_actuator_init(void *parameters)
 	bool b_event;
 
 	/* Print out: Task Initialized */
-	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_actuator_init), p_task_actuator);
-	LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_actuator), p_task_actuator_);
+	//LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_actuator_init), p_task_actuator);
+	//LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_actuator), p_task_actuator_);
 
 	g_task_actuator_cnt = G_TASK_ACT_CNT_INIT;
 
 	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_actuator_cnt), g_task_actuator_cnt);
+	//LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_actuator_cnt), g_task_actuator_cnt);
 
 	for (index = 0; ACTUATOR_DTA_QTY > index; index++)
 	{
@@ -106,16 +106,16 @@ void task_actuator_init(void *parameters)
 		p_task_actuator_dta = &task_actuator_dta_list[index];
 
 		/* Print out: Index & Task execution FSM */
-		LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(index), index);
 
 		state = p_task_actuator_dta->state;
-		LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
 
 		event = p_task_actuator_dta->event;
-		LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
+		//LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
 
 		b_event = p_task_actuator_dta->flag;
-		LOGGER_LOG("   %s = %s\r\n", GET_NAME(b_event), (b_event ? "true" : "false"));
+		//LOGGER_LOG("   %s = %s\r\n", GET_NAME(b_event), (b_event ? "true" : "false"));
 	}
 
 	g_task_actuator_tick_cnt = G_TASK_ACT_TICK_CNT_INI;

@@ -7,7 +7,7 @@
 #include "main.h"
 #include "task_display.h"
 #include "task_display_attribute.h"
-#include "logger.h"
+//#include "//LOGGER.h"
 #include "dwt.h"
 #include <stdbool.h>
 
@@ -106,7 +106,7 @@ void task_display_init(void *parameters)
     uint32_t index;
     task_display_dta_t *p_task_display_dta;
 
-    LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_display_init), p_task_display);
+    //LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_display_init), p_task_display);
 
     g_task_display_cnt = G_TASK_DISP_CNT_INIT;
 

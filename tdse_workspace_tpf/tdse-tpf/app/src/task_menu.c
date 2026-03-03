@@ -39,9 +39,9 @@
 /********************** inclusions *******************************************/
 /* Project includes. */
 #include "main.h"
-
+#include <stdio.h>
 /* Demo includes. */
-#include "logger.h"
+//#include "//LOGGER.h"
 #include "dwt.h"
 
 /* Application & Tasks includes. */
@@ -106,13 +106,13 @@ void task_menu_init(void *parameters)
 	bool b_event;
 
 	/* Print out: Task Initialized */
-	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_menu_init), p_task_menu);
-	LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_menu), p_task_menu_);
+	//LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_menu_init), p_task_menu);
+	//LOGGER_LOG("  %s is a %s\r\n", GET_NAME(task_menu), p_task_menu_);
 
 	g_task_menu_cnt = G_TASK_MEN_CNT_INI;
 
 	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_menu_cnt), g_task_menu_cnt);
+	//LOGGER_LOG("   %s = %lu\r\n", GET_NAME(g_task_menu_cnt), g_task_menu_cnt);
 
 	init_queue_event_task_menu();
 
@@ -122,13 +122,13 @@ void task_menu_init(void *parameters)
 
 	/* Print out: Task execution FSM */
 	state = p_task_menu_dta->state;
-	LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
+	//LOGGER_LOG("   %s = %lu", GET_NAME(state), (uint32_t)state);
 
 	event = p_task_menu_dta->event;
-	LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
+	//LOGGER_LOG("   %s = %lu", GET_NAME(event), (uint32_t)event);
 
 	b_event = p_task_menu_dta->flag;
-	LOGGER_LOG("   %s = %s\r\n", GET_NAME(b_event), (b_event ? "true" : "false"));
+	//LOGGER_LOG("   %s = %s\r\n", GET_NAME(b_event), (b_event ? "true" : "false"));
 
 	cycle_counter_init();
 	cycle_counter_reset();

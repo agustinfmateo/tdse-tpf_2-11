@@ -40,7 +40,7 @@
 #include "main.h"
 
 /* Demo includes. */
-#include "logger.h"
+//#include "//LOGGER.h"
 #include "dwt.h"
 
 /* Application & Tasks includes. */
@@ -105,16 +105,16 @@ void app_init(void)
 	uint32_t index;
 
 	/* Print out: Application Initialized */
-	LOGGER_LOG("\r\n");
-	LOGGER_LOG("%s is running - Tick [mS] = %lu\r\n", GET_NAME(app_init), HAL_GetTick());
+	//LOGGER_LOG("\r\n");
+	//LOGGER_LOG("%s is running - Tick [mS] = %lu\r\n", GET_NAME(app_init), HAL_GetTick());
 
-	LOGGER_LOG(p_sys);
-	LOGGER_LOG(p_app);
+	//LOGGER_LOG(p_sys);
+	//LOGGER_LOG(p_app);
 
 	g_app_cnt = G_APP_CNT_INI;
 
 	/* Print out: Application execution counter */
-	LOGGER_LOG(" %s = %lu\r\n", GET_NAME(g_app_cnt), g_app_cnt);
+	//LOGGER_LOG(" %s = %lu\r\n", GET_NAME(g_app_cnt), g_app_cnt);
 
 	cycle_counter_init();
 
